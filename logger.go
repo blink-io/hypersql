@@ -1,4 +1,4 @@
-package sql
+package hypersql
 
 type PrintfLogger func(format string, args ...any)
 

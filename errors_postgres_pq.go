@@ -1,4 +1,4 @@
-package sql
+package hypersql
 
 import (
 	"github.com/lib/pq"

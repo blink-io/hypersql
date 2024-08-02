@@ -1,4 +1,4 @@
-package sql
+package hypersql
 
 var commonErrHandlers = make(map[error]func(error) *Error)
 

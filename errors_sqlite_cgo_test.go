@@ -1,6 +1,6 @@
 //go:build cgo
 
-package sql
+package hypersql
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package sql
+package hypersql
 
 const (
 	AdditionUsePool = "usePool"

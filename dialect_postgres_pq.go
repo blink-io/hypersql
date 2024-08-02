@@ -1,6 +1,6 @@
 //go:build pq
 
-package sql
+package hypersql
 
 import (
 	"context"
