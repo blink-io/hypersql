@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	mlogger "github.com/blink-io/hypersql/mysql/logger"
+	"github.com/blink-io/hypersql/mysql/logger"
 	mysqlparams "github.com/blink-io/hypersql/mysql/params"
 	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/cast"
@@ -27,8 +27,15 @@ func init() {
 }
 
 type MySQLConfig struct {
-	ServerPubKey         string
+	ServerPubKey string
+
 	ConnectionAttributes string
+
+	CheckConnLiveness bool
+
+	MultiStatements bool
+
+	InterpolateParams bool
 }
 
 func ValidateMySQLConfig(c *Config) error {
@@ -114,15 +121,17 @@ func ToMySQLConfig(c *Config) *mysql.Config {
 		cc.TLSConfig = keyName
 	}
 	if l := c.Logger; l != nil {
-		cc.Logger = mlogger.Logf(func(v ...any) {
-			msg := fmt.Sprint(v...)
-			l(msg)
+		cc.Logger = logger.Logf(func(v ...any) {
+			l(fmt.Sprint(v...))
 		})
 	}
 
 	if mc := c.MySQL; mc != nil {
 		cc.ServerPubKey = mc.ServerPubKey
 		cc.ConnectionAttributes = mc.ConnectionAttributes
+		cc.CheckConnLiveness = mc.CheckConnLiveness
+		cc.MultiStatements = mc.MultiStatements
+		cc.InterpolateParams = mc.InterpolateParams
 	}
 
 	return cc
