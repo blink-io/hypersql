@@ -8,14 +8,12 @@ import (
 	pgparams "github.com/blink-io/hypersql/postgres/params"
 	pgxslog "github.com/blink-io/hypersql/postgres/pgx/logger/slog"
 	pgxotel "github.com/blink-io/hypersql/postgres/pgx/tracer/otel"
-	pgxzap "github.com/jackc/pgx-zap"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/jackc/pgx/v5/tracelog"
 	"github.com/spf13/cast"
-	"go.uber.org/zap"
 )
 
 func GetPostgresDSN(dialect string) (Dsner, error) {
@@ -96,40 +94,30 @@ func ToPGXConfig(c *Config) (*pgx.ConnConfig, *PostgresOptions, error) {
 		return nil, nil, err
 	}
 
-	aopts := AdditionsToPostgresOptions(c.Additions)
+	opts := AdditionsToPostgresOptions(c.Additions)
 
 	cc.Config = *pgcc
 	traceLogLevel := tracelog.LogLevelInfo
 	if c.Debug {
 		traceLogLevel = tracelog.LogLevelDebug
+	} else {
+		if lv, errv := tracelog.LogLevelFromString(opts.loglevel); errv == nil {
+			traceLogLevel = lv
+		}
 	}
 
-	if aopts.trace == PostgresTraceOTel {
+	if opts.trace == PostgresTraceOTel {
 		cc.Tracer = pgxotel.NewTracer()
 	} else {
 		var tlogger tracelog.Logger
 		if l := c.Logger; l != nil {
-			tlogger = tracelog.LoggerFunc(func(ctx context.Context, level tracelog.LogLevel, msg string, data map[string]interface{}) {
-				alen := len(data) * 2
-				args := make([]any, alen+1)
-				var i = 0
-				for k, v := range data {
-					args[i] = k
-					args[i+1] = v
-					i = i + 2
-				}
-				l("msg: %s, data: %#v", args...)
-			})
+			tlogger = tracelog.LoggerFunc(doLoggerFunc(l))
 		} else {
-			if aopts.tracelog == PostgresTracelogZap {
-				tlogger = pgxzap.NewLogger(zap.L())
-			} else {
-				tlogger = pgxslog.NewLogger(slog.Default())
-			}
+			tlogger = pgxslog.NewLogger(slog.Default())
 		}
 		cc.Tracer = &tracelog.TraceLog{Logger: tlogger, LogLevel: traceLogLevel}
 	}
-	return cc, aopts, nil
+	return cc, opts, nil
 }
 
 func ToPGXPoolConfig(c *Config) (*pgxpool.Config, *PostgresOptions, error) {
@@ -138,13 +126,13 @@ func ToPGXPoolConfig(c *Config) (*pgxpool.Config, *PostgresOptions, error) {
 		return nil, nil, err
 	}
 
-	pgcc, aopt, err := ToPGXConfig(c)
+	cfg, opts, err := ToPGXConfig(c)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	ppc.ConnConfig = pgcc
-	return ppc, aopt, nil
+	ppc.ConnConfig = cfg
+	return ppc, opts, nil
 }
 
 func AdditionsToPostgresOptions(adds map[string]string) *PostgresOptions {

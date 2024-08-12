@@ -3,9 +3,11 @@ package hypersql
 import (
 	"context"
 	"database/sql/driver"
+	"fmt"
 	"net"
 	"time"
 
+	mlogger "github.com/blink-io/hypersql/mysql/logger"
 	mysqlparams "github.com/blink-io/hypersql/mysql/params"
 	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/cast"
@@ -109,6 +111,13 @@ func ToMySQLConfig(c *Config) *mysql.Config {
 		_ = mysql.RegisterTLSConfig(keyName, tlsConfig)
 		cc.TLSConfig = keyName
 	}
+	if l := c.Logger; l != nil {
+		cc.Logger = mlogger.Logf(func(v ...any) {
+			msg := fmt.Sprint(v...)
+			l(msg)
+		})
+	}
+
 	return cc
 }
 

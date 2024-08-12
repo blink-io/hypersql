@@ -6,8 +6,6 @@ import (
 
 const (
 	PostgresTraceOTel = "otel"
-
-	PostgresTracelogZap = "zap"
 )
 
 var compatiblePostgresDialects = []string{
@@ -27,6 +25,7 @@ func init() {
 type PostgresOptions struct {
 	trace    string
 	tracelog string
+	loglevel string
 	usePool  bool
 }
 

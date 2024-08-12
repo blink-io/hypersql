@@ -36,7 +36,7 @@ type Config struct {
 	Debug           bool
 	Collation       string
 	ClientName      string
-	Logger          func(format string, args ...any)
+	Logger          Logger
 
 	// OpenTelemetry
 	WithOTel  bool
