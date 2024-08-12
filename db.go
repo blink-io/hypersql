@@ -13,11 +13,11 @@ import (
 
 const (
 	// DialectMySQL defines MySQL dialect
-	DialectMySQL = "mysql"
+	DialectMySQL = "MySQL"
 	// DialectPostgres defines PostgreSQL dialect
-	DialectPostgres = "postgres"
+	DialectPostgres = "Postgres"
 	// DialectSQLite defines SQLite dialect. We only support SQLite3 above.
-	DialectSQLite = "sqlite"
+	DialectSQLite = "SQLite"
 	// DialectSQLite3 defines SQLite dialect
 	DialectSQLite3 = "sqlite3"
 )

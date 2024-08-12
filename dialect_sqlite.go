@@ -17,7 +17,7 @@ func init() {
 	connectors[d] = GetSQLiteConnector
 }
 
-type SQLiteOptions struct {
+type SQLiteConfig struct {
 }
 
 func ValidateSQLiteConfig(c *Config) error {
@@ -49,11 +49,6 @@ func GetSQLiteConnector(ctx context.Context, c *Config) (driver.Connector, error
 	dsn := toSQLiteDSN(c)
 	drv := wrapDriverHooks(getRawSQLiteDriver(), c.DriverHooks...)
 	return &dsnConnector{dsn: dsn, driver: drv}, nil
-}
-
-func AdditionsToSQLiteOptions(adds map[string]string) *SQLiteOptions {
-	opts := new(SQLiteOptions)
-	return opts
 }
 
 func toSQLiteDSN(c *Config) string {

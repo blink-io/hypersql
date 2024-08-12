@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cast"
 
 	"modernc.org/sqlite"
-	//"github.com/glebarez/go-sqlite"
+	//"github.com/glebarez/go-SQLite"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"

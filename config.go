@@ -42,9 +42,13 @@ type Config struct {
 	WithOTel  bool
 	OTelAttrs []attribute.KeyValue
 
-	// Additional options
-	Additions map[string]string
-	dsn       string
+	// Database specific config
+	MySQL    *MySQLConfig
+	Postgres *PostgresConfig
+	SQLite   *SQLiteConfig
+
+	// DSN for internal use
+	dsn string
 }
 
 func SetupConfig(c *Config) *Config {

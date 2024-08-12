@@ -26,7 +26,9 @@ func init() {
 	connectors[d] = GetMySQLConnector
 }
 
-type MySQLOptions struct {
+type MySQLConfig struct {
+	ServerPubKey         string
+	ConnectionAttributes string
 }
 
 func ValidateMySQLConfig(c *Config) error {
@@ -118,16 +120,16 @@ func ToMySQLConfig(c *Config) *mysql.Config {
 		})
 	}
 
+	if mc := c.MySQL; mc != nil {
+		cc.ServerPubKey = mc.ServerPubKey
+		cc.ConnectionAttributes = mc.ConnectionAttributes
+	}
+
 	return cc
 }
 
 func IsCompatibleMySQLDialect(dialect string) bool {
 	return isCompatibleDialectIn(dialect, compatibleMySQLDialects)
-}
-
-func AdditionsToMySQLOptions(adds map[string]string) *MySQLOptions {
-	opts := new(MySQLOptions)
-	return opts
 }
 
 func getRawMySQLDriver() driver.Driver {
