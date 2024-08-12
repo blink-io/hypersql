@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	ErrNilConfig = errors.New("config is nil")
+	ErrNilConfig = errors.New("[hypersql] config is nil")
 )
 
 type Config struct {
