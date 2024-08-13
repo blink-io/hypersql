@@ -24,7 +24,7 @@ type CtxFunc func(ctx context.Context, format string, args ...any)
 var _ sqlhooks.Hooks = (CtxFunc)(nil)
 
 func (f CtxFunc) Before(ctx context.Context, query string, args ...any) (context.Context, error) {
-	f(ctx, "Executed SQL, query: %s, args: %+v", query, args)
+	f(ctx, "[LOGGING] Executed SQL, query: %s, args: %+v", query, args)
 	return ctx, nil
 }
 
