@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHypersql_SQLite_CGO_FREE_1(t *testing.T) {
+func TestHypersql_SQLite_CGO_EXT_1(t *testing.T) {
 	drv := getRawSQLiteDriver()
 	sql.Register("sqlite_cgo_free", drv)
 	db, err := sql.Open("sqlite_cgo_free", ":memory:")

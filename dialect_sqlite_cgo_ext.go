@@ -5,10 +5,10 @@ package hypersql
 import (
 	"database/sql/driver"
 
-	sqlite3 "github.com/ncruces/go-sqlite3/driver"
+	sqlite3drv "github.com/ncruces/go-sqlite3/driver"
 	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 func getRawSQLiteDriver() driver.Driver {
-	return &sqlite3.SQLite{}
+	return &sqlite3drv.SQLite{}
 }
