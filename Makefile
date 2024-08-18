@@ -9,4 +9,16 @@ build:
 
 .PHONY: test
 test:
-	go build -v ./...
+	go test -v ./...
+
+.PHONY: test-cgo
+test-cgo:
+	go test -tags use_cgo,!cgo_ext -v ./...
+
+.PHONY: test-cgo-ext
+test-cgo-ext:
+	go test -tags use_cgo,cgo_ext -v
+
+.PHONY: test-nocgo
+test-nocgo:
+	go test -tags !use_cgo -v ./...
