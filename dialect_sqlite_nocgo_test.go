@@ -13,7 +13,7 @@ import (
 func TestHypersql_SQLite_NOCGO_1(t *testing.T) {
 	drv := getRawSQLiteDriver()
 	sql.Register("sqlite_cgo_free", drv)
-	db, err := sql.Open("sqlite_cgo_free", "file:demo.db?_txlock=immediate")
+	db, err := sql.Open("sqlite_cgo_free", ":memory:")
 	require.NoError(t, err)
 
 	r := db.QueryRow("select sqlite_version()")

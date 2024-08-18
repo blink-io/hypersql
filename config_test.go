@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/sanity-io/litter"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xo/dburl"
 )
@@ -20,7 +21,8 @@ func TestOptions_Validate(t *testing.T) {
 	var o *Config
 	o = SetupConfig(o)
 	verr := o.Validate(context.Background())
-	require.NoError(t, verr)
+	require.Error(t, verr)
+	assert.ErrorIs(t, verr, ErrUnsupportedDialect)
 }
 
 func TestParseURL_1(t *testing.T) {

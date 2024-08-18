@@ -1,4 +1,4 @@
-//go:build no_cgo && cgo_free
+//go:build use_cgo && cgo_ext
 
 package hypersql
 
