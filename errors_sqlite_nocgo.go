@@ -1,4 +1,4 @@
-//go:build !cgo
+//go:build no_cgo && !cgo_free
 
 package hypersql
 
@@ -7,21 +7,21 @@ import (
 	"modernc.org/sqlite"
 )
 
-type SQLiteError = *sqlite.Error
+type SQLiteError = sqlite.Error
 
-var sqliteErrorHandlers = map[int]func(*sqlite.Error) *Error{
+var sqliteErrorHandlers = map[int]func(*SQLiteError) *Error{
 	// SQLITE_CONSTRAINT_CHECK (275)
-	275: func(e *sqlite.Error) *Error {
+	275: func(e *SQLiteError) *Error {
 		return ErrConstraintCheck.
 			Renew(cast.ToString(e.Code()), e.Error(), e)
 	},
 	// SQLITE_CONSTRAINT_FOREIGNKEY (787)
-	787: func(e *sqlite.Error) *Error {
+	787: func(e *SQLiteError) *Error {
 		return ErrConstraintForeignKey.
 			Renew(cast.ToString(e.Code()), e.Error(), e)
 	},
 	// SQLITE_CONSTRAINT_NOTNULL (1299)
-	1299: func(e *sqlite.Error) *Error {
+	1299: func(e *SQLiteError) *Error {
 		return ErrConstraintNotNull.
 			Renew(cast.ToString(e.Code()), e.Error(), e)
 	},
@@ -32,16 +32,16 @@ var sqliteErrorHandlers = map[int]func(*sqlite.Error) *Error{
 	2067: sqliteUniqueConstraintHandler,
 }
 
-func RegisterSQLiteErrorHandler(number int, fn func(*sqlite.Error) *Error) {
+func RegisterSQLiteErrorHandler(number int, fn func(*SQLiteError) *Error) {
 	sqliteErrorHandlers[number] = fn
 }
 
-func sqliteUniqueConstraintHandler(e *sqlite.Error) *Error {
+func sqliteUniqueConstraintHandler(e *SQLiteError) *Error {
 	return ErrConstraintUnique.
 		Renew(cast.ToString(e.Code()), e.Error(), e)
 }
 
-func sqliteError(e *sqlite.Error) *Error {
+func handleSQLiteError(e *SQLiteError) *Error {
 	if h, ok := sqliteErrorHandlers[e.Code()]; ok {
 		return h(e)
 	} else {

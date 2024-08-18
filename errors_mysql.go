@@ -74,7 +74,7 @@ func mysqlCheckConstraintErrHandler(e *mysql.MySQLError) *Error {
 	return ErrConstraintForeignKey.Renew(code, e.Message, e)
 }
 
-// handleMysqlError transforms *mysql.MySQLError to *Error.
+// handleMySQLError transforms *mysql.MySQLError to *Error.
 // Doc: https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html
 // About SQLState value: This value is a five-character string (for example, '42S02').
 // SQLSTATE values are taken from ANSI SQL and ODBC and are more standardized than the numeric error codes.
@@ -95,7 +95,7 @@ func mysqlCheckConstraintErrHandler(e *mysql.MySQLError) *Error {
 // In these cases, 'HY000' (general error) is used.
 // For client-side errors, the SQLSTATE value is always 'HY000' (general error),
 // so it is not meaningful for distinguishing one client error from another.
-func handleMysqlError(e *mysql.MySQLError) *Error {
+func handleMySQLError(e *mysql.MySQLError) *Error {
 	if h, ok := mysqlErrorHandlers[e.Number]; ok {
 		return h(e)
 	} else {

@@ -64,8 +64,12 @@ github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D
 github.com/mattn/go-sqlite3 v1.10.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
 github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
+github.com/ncruces/go-sqlite3 v0.18.0 h1:aH7WGzOC0CYpUPG1LdFg7JApybiuXgYUE2itzLBwhPM=
+github.com/ncruces/go-sqlite3 v0.18.0/go.mod h1:eEOyZnW1dGTJ+zDpMuzfYamEUBtdFz5zeYhqLBtHxvM=
 github.com/ncruces/go-strftime v0.1.9 h1:bY0MQC28UADQmHmaF5dgpLmImcShSi2kHU9XLdhx/f4=
 github.com/ncruces/go-strftime v0.1.9/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
+github.com/ncruces/julianday v1.0.0 h1:fH0OKwa7NWvniGQtxdJRxAgkBMolni2BjDHaWTxqt7M=
+github.com/ncruces/julianday v1.0.0/go.mod h1:Dusn2KvZrrovOMJuOt0TNXL6tB7U2E8kvza5fFc9G7g=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/pingcap/errors v0.11.4 h1:lFuQV/oaUMGcD2tqt+01ROSmJs75VG1ToEOkZIZ4nE4=
 github.com/pingcap/errors v0.11.4/go.mod h1:Oi8TUi2kEtXXLMJk9l1cGmz20kV3TaQ0usTwv5KuLY8=
@@ -96,6 +100,8 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+github.com/tetratelabs/wazero v1.8.0 h1:iEKu0d4c2Pd+QSRieYbnQC9yiFlMS9D+Jr0LsRmcF4g=
+github.com/tetratelabs/wazero v1.8.0/go.mod h1:yAI0XTsMBhREkM/YDAK/zNou3GoiAce1P6+rp/wQhjs=
 github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.1 h1:i4f4ey/v5x0zXurkqV/zbOZlMLu8WNIvpDn1tJzdutY=
 github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.1/go.mod h1:ZKgZNsGk5Y+uOxRHcYb4MKLVpmKYU4/u7BUtbStJm7w=
 github.com/xo/dburl v0.23.2 h1:Fl88cvayrgE56JA/sqhNMLljCW/b7RmG1mMkKMZUFgA=
@@ -142,6 +148,8 @@ modernc.org/gc/v3 v3.0.0-20240801135723-a856999a2e4a h1:CfbpOLEo2IwNzJdMvE8aiRbP
 modernc.org/gc/v3 v3.0.0-20240801135723-a856999a2e4a/go.mod h1:Qz0X07sNOR1jWYCrJMEnbW/X55x206Q7Vt4mz6/wHp4=
 modernc.org/libc v1.59.4 h1:kas1A6v59SN7iJIy4BQ/o5djZC1VO3pPhwc7HS4Atco=
 modernc.org/libc v1.59.4/go.mod h1:EY/egGEU7Ju66eU6SBqCNYaFUDuc4npICkMWnU5EE3A=
+modernc.org/libc v1.59.9 h1:k+nNDDakwipimgmJ1D9H466LhFeSkaPPycAs1OZiDmY=
+modernc.org/libc v1.59.9/go.mod h1:EY/egGEU7Ju66eU6SBqCNYaFUDuc4npICkMWnU5EE3A=
 modernc.org/mathutil v1.6.0 h1:fRe9+AmYlaej+64JsEEhoWuAYBkOtQiMEU7n/XgfYi4=
 modernc.org/mathutil v1.6.0/go.mod h1:Ui5Q9q1TR2gFm0AQRqQUaBWFLAhQpCwNcuhBOSedWPo=
 modernc.org/memory v1.8.0 h1:IqGTL6eFMaDZZhEWwcREgeMXYwmW83LYW8cROZYkg+E=

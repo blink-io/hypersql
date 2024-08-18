@@ -119,9 +119,9 @@ func WrapError(e error) *Error {
 	} else if tErr, ok := isTargetErr[*pgconn.PgError](e); ok {
 		newErr = handlePgxError(tErr)
 	} else if tErr, ok := isTargetErr[*mysql.MySQLError](e); ok {
-		newErr = handleMysqlError(tErr)
+		newErr = handleMySQLError(tErr)
 	} else if tErr, ok := isTargetErr[*SQLiteError](e); ok {
-		newErr = handleSqliteError(tErr)
+		newErr = handleSQLiteError(tErr)
 	} else if ef, ok := handleCommonError(e); ok {
 		newErr = ef(e)
 	} else {
