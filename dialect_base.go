@@ -48,7 +48,7 @@ func IsCompatibleDialect(dialect string) (string, bool) {
 
 func isCompatibleDialectIn(dialect string, compatibleDialects []string) bool {
 	flag := slices.ContainsFunc(compatibleDialects, func(e string) bool {
-		return e == strings.ToLower(dialect)
+		return strings.EqualFold(e, dialect)
 	})
 	return flag
 }
