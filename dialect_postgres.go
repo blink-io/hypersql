@@ -45,6 +45,13 @@ type PostgresConfig struct {
 	DescriptionCacheCapacity int
 }
 
+func (c *PostgresConfig) Validate(ctx context.Context) error {
+	if c == nil {
+
+	}
+	return nil
+}
+
 func GetPostgresDriver(dialect string) (driver.Driver, error) {
 	if IsCompatiblePostgresDialect(dialect) {
 		return getRawPostgresDriver(), nil
@@ -170,10 +177,6 @@ func getRawPostgresDriver() driver.Driver {
 	// Notes: Unable to invoke &stdlib.Driver{} directly.
 	// Because the "configs" field inside the driver is not initialized.
 	return stdlib.GetDefaultDriver()
-}
-
-func ValidatePostgresConfig(c *Config) error {
-	return nil
 }
 
 func handlePostgresParams(params map[string]string) map[string]string {

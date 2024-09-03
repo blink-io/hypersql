@@ -2,13 +2,7 @@
 <module type="WEB_MODULE" version="4">
   <component name="Go" enabled="true">
     <buildTags>
-      <option name="cgo" value="NO" />
-      <option name="customFlags">
-        <array>
-          <option value="use_cgo" />
-          <option value="cgo_ext" />
-        </array>
-      </option>
+      <option name="cgo" value="YES" />
     </buildTags>
   </component>
   <component name="NewModuleRootManager">

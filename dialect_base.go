@@ -36,14 +36,18 @@ func GetFormalDialect(dialect string) string {
 
 // IsCompatibleDialect checks
 func IsCompatibleDialect(dialect string) (string, bool) {
-	if IsCompatiblePostgresDialect(dialect) {
+	switch {
+	case IsCompatiblePostgresDialect(dialect):
 		return DialectPostgres, true
-	} else if IsCompatibleMySQLDialect(dialect) {
+	case IsCompatibleMySQLDialect(dialect):
 		return DialectMySQL, true
-	} else if IsCompatibleSQLiteDialect(dialect) {
+	case IsCompatibleSQLiteDialect(dialect):
 		return DialectSQLite, true
+	case IsCompatibleDuckDBDialect(dialect):
+		return DialectDuckDB, true
+	default:
+		return "", false
 	}
-	return "", false
 }
 
 func isCompatibleDialectIn(dialect string, compatibleDialects []string) bool {
