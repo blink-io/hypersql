@@ -38,7 +38,10 @@ type MySQLConfig struct {
 	InterpolateParams bool
 }
 
-func ValidateMySQLConfig(c *Config) error {
+func (c *MySQLConfig) Validate(ctx context.Context) error {
+	if c == nil {
+
+	}
 	return nil
 }
 
@@ -63,7 +66,7 @@ func GetMySQLDriver(dialect string) (driver.Driver, error) {
 func GetMySQLConnector(ctx context.Context, c *Config) (driver.Connector, error) {
 	cc := ToMySQLConfig(c)
 	dsn := cc.FormatDSN()
-	drv := wrapDriverHooks(getRawPostgresDriver(), c.DriverHooks...)
+	drv := wrapDriverHooks(getRawMySQLDriver(), c.DriverHooks...)
 	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }
 

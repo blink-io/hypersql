@@ -20,7 +20,10 @@ func init() {
 type SQLiteConfig struct {
 }
 
-func ValidateSQLiteConfig(c *Config) error {
+func (c *SQLiteConfig) Validate(ctx context.Context) error {
+	if c == nil {
+		return ErrNilConfig
+	}
 	return nil
 }
 

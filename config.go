@@ -14,6 +14,10 @@ var (
 	ErrNilConfig = errors.New("[hypersql] config is nil")
 )
 
+type ConfigParams map[string]string
+
+type DriverHooks []sqlhooks.Hooks
+
 type Config struct {
 	Network         string
 	Dialect         string
@@ -23,7 +27,7 @@ type Config struct {
 	User            string
 	Password        string
 	TLSConfig       *tls.Config
-	Params          map[string]string
+	Params          ConfigParams
 	DialTimeout     time.Duration
 	ConnMaxLifetime time.Duration
 	ConnMaxIdleTime time.Duration
@@ -31,7 +35,7 @@ type Config struct {
 	MaxIdleConns    int
 	ConnInitSQL     string
 	ValidationSQL   string
-	DriverHooks     []sqlhooks.Hooks
+	DriverHooks     DriverHooks
 	Loc             *time.Location
 	Debug           bool
 	Collation       string
@@ -46,6 +50,7 @@ type Config struct {
 	MySQL    *MySQLConfig
 	Postgres *PostgresConfig
 	SQLite   *SQLiteConfig
+	DuckDB   *DuckDBConfig
 
 	// DSN for internal use
 	dsn string
@@ -83,13 +88,15 @@ func (c *Config) Validate(ctx context.Context) error {
 	if !ok {
 		return ErrUnsupportedDialect
 	}
-	switch d {
-	case DialectPostgres:
-		return ValidatePostgresConfig(c)
-	case DialectMySQL:
-		return ValidateMySQLConfig(c)
-	case DialectSQLite:
-		return ValidateSQLiteConfig(c)
+	switch {
+	case DialectPostgres == d && c.Postgres != nil:
+		return c.Postgres.Validate(ctx)
+	case DialectMySQL == d && c.MySQL != nil:
+		return c.MySQL.Validate(ctx)
+	case DialectSQLite == d && c.SQLite != nil:
+		return c.SQLite.Validate(ctx)
+	case DialectDuckDB == d && c.DuckDB != nil:
+		return c.DuckDB.Validate(ctx)
 	default:
 		return ErrUnsupportedDialect
 	}
