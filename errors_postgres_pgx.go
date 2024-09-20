@@ -1,6 +1,9 @@
 package hypersql
 
 import (
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -43,7 +46,9 @@ func RegisterPgxErrorHandler(code string, fn func(*pgconn.PgError) *Error) {
 // handlePgxError transforms *pgconn.PgError to *Error.
 // Doc: https://www.postgresql.org/docs/11/protocol-error-fields.html.
 func handlePgxError(e *pgconn.PgError) *Error {
-	if h, ok := pgxErrorHandlers[e.Code]; ok {
+	if errors.Is(e, pgx.ErrNoRows) {
+		return ErrNoRows.Renew(e.Code, e.Message, e)
+	} else if h, ok := pgxErrorHandlers[e.Code]; ok {
 		return h(e)
 	} else {
 		return ErrOther.Renew(e.Code, e.Message, e)
