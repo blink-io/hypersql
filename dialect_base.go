@@ -43,8 +43,6 @@ func IsCompatibleDialect(dialect string) (string, bool) {
 		return DialectMySQL, true
 	case IsCompatibleSQLiteDialect(dialect):
 		return DialectSQLite, true
-	case IsCompatibleDuckDBDialect(dialect):
-		return DialectDuckDB, true
 	default:
 		return "", false
 	}

@@ -50,7 +50,6 @@ type Config struct {
 	MySQL    *MySQLConfig
 	Postgres *PostgresConfig
 	SQLite   *SQLiteConfig
-	DuckDB   *DuckDBConfig
 
 	// DSN for internal use
 	dsn string
@@ -95,8 +94,6 @@ func (c *Config) Validate(ctx context.Context) error {
 		return c.MySQL.Validate(ctx)
 	case DialectSQLite == d && c.SQLite != nil:
 		return c.SQLite.Validate(ctx)
-	case DialectDuckDB == d && c.DuckDB != nil:
-		return c.DuckDB.Validate(ctx)
 	default:
 		return ErrUnsupportedDialect
 	}
