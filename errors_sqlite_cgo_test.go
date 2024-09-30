@@ -1,4 +1,4 @@
-//go:build use_cgo && !cgo_ext
+//go:build sqlite && cgo && sqlite_cgo
 
 package hypersql
 

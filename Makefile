@@ -7,18 +7,23 @@ upgrade:
 build:
 	go build -v ./...
 
+.PHONY: build-with-sqlite
+build-with-sqlite:
+	go build -tags sqlite -v ./...
+
+.PHONY: build-with-sqlite-cgo
+build-with-sqlite-cgo:
+	go build -tags sqlite,sqlite_cgo -v ./...
+
+
 .PHONY: test
 test:
 	go test -v ./...
 
-.PHONY: test-cgo
-test-cgo:
-	go test -tags use_cgo,!cgo_ext -v ./...
+.PHONY: test-sqlite
+test-sqlite:
+	go test -tags sqlite -v ./...
 
-.PHONY: test-cgo-ext
-test-cgo-ext:
-	go test -tags use_cgo,cgo_ext -v
-
-.PHONY: test-nocgo
-test-nocgo:
-	go test -tags !use_cgo -v ./...
+.PHONY: test-sqlite-cgo
+test-sqlite-cgo:
+	go test -tags sqlite,sqlite_cgo -v ./...
