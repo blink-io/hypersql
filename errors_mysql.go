@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cast"
 )
 
+type MySQLError = mysql.MySQLError
+
 var mysqlErrorHandlers = map[uint16]func(*mysql.MySQLError) *Error{
 	// Error number: 1169; Symbol: ER_DUP_UNIQUE; SQLSTATE: 23000
 	// Message: Can't write, because of unique constraint, to table '%s'

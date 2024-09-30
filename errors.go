@@ -3,9 +3,6 @@ package hypersql
 import (
 	"database/sql"
 	"errors"
-
-	"github.com/go-sql-driver/mysql"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type ErrName string
@@ -116,9 +113,9 @@ func WrapError(e error) *Error {
 	var newErr *Error
 	if tErr, ok := isTargetErr[*Error](e); ok {
 		newErr = tErr
-	} else if tErr, ok := isTargetErr[*pgconn.PgError](e); ok {
+	} else if tErr, ok := isTargetErr[*PostgresError](e); ok {
 		newErr = handlePgxError(tErr)
-	} else if tErr, ok := isTargetErr[*mysql.MySQLError](e); ok {
+	} else if tErr, ok := isTargetErr[*MySQLError](e); ok {
 		newErr = handleMySQLError(tErr)
 	} else if tErr, ok := isTargetErr[*SQLiteError](e); ok {
 		newErr = handleSQLiteError(tErr)

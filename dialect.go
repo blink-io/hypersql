@@ -25,7 +25,13 @@ var (
 	//dsners = make(map[string]GetDSNFunc)
 
 	connectors = make(map[string]ConnectorFunc)
+
+	dialecters = make(map[string]func(string) bool)
 )
+
+func GetConnector(dialect string) ConnectorFunc {
+	return connectors[dialect]
+}
 
 func GetFormalDialect(dialect string) string {
 	if d, ok := IsCompatibleDialect(dialect); ok {
@@ -36,16 +42,12 @@ func GetFormalDialect(dialect string) string {
 
 // IsCompatibleDialect checks
 func IsCompatibleDialect(dialect string) (string, bool) {
-	switch {
-	case IsCompatiblePostgresDialect(dialect):
-		return DialectPostgres, true
-	case IsCompatibleMySQLDialect(dialect):
-		return DialectMySQL, true
-	case IsCompatibleSQLiteDialect(dialect):
-		return DialectSQLite, true
-	default:
-		return "", false
+	for k, v := range dialecters {
+		if v(dialect) {
+			return k, true
+		}
 	}
+	return "", false
 }
 
 func isCompatibleDialectIn(dialect string, compatibleDialects []string) bool {

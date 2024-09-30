@@ -7,6 +7,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+type PostgresError = pgconn.PgError
+
 var pgxErrorHandlers = map[string]func(*pgconn.PgError) *Error{
 	// P0002	no_data_found
 	"P0002": func(e *pgconn.PgError) *Error {

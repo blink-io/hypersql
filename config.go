@@ -46,10 +46,8 @@ type Config struct {
 	WithOTel  bool
 	OTelAttrs []attribute.KeyValue
 
-	// Database specific config
-	MySQL    *MySQLConfig
-	Postgres *PostgresConfig
-	SQLite   *SQLiteConfig
+	// Database extra config
+	Extra any
 
 	// dsn for internal use
 	dsn string
@@ -83,19 +81,11 @@ func (c *Config) Validate(ctx context.Context) error {
 	if c == nil {
 		return ErrNilConfig
 	}
-	d, ok := IsCompatibleDialect(c.Dialect)
-	if !ok {
-		return ErrUnsupportedDialect
-	}
-	switch {
-	case DialectPostgres == d && c.Postgres != nil:
-		return c.Postgres.Validate(ctx)
-	case DialectMySQL == d && c.MySQL != nil:
-		return c.MySQL.Validate(ctx)
-	case DialectSQLite == d && c.SQLite != nil:
-		return c.SQLite.Validate(ctx)
-	default:
-		return ErrUnsupportedDialect
+	vv, ok := c.Extra.(Validator)
+	if ok {
+		return vv.Validate(ctx)
+	} else {
+		return nil
 	}
 }
 

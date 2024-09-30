@@ -1,7 +1,7 @@
 package hypersql
 
 import (
-	"context"
+	"github.com/blink-io/hypersql/sqlite"
 )
 
 var compatibleSQLiteDialects = []string{
@@ -10,23 +10,19 @@ var compatibleSQLiteDialects = []string{
 }
 
 func init() {
-	d := DialectSQLite
+	dialect := DialectSQLite
 	//drivers[dn] = GetSQLiteDriver
 	//dsners[dn] = GetSQLiteDSN
-	connectors[d] = GetSQLiteConnector
+	connectors[dialect] = GetSQLiteConnector
+
+	dialecters[dialect] = IsCompatibleSQLiteDialect
 }
 
-type SQLiteConfig struct {
-}
+func ToSQLiteConfig(c *Config) *sqlite.Config {
+	name := c.Name
 
-func (c *SQLiteConfig) Validate(ctx context.Context) error {
-	if c == nil {
-		return ErrNilConfig
+	cc := &sqlite.Config{
+		Name: name,
 	}
-	return nil
-}
-
-func toSQLiteDSN(c *Config) string {
-	dsn := c.Host
-	return dsn
+	return cc
 }

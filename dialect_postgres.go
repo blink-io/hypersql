@@ -11,10 +11,12 @@ import (
 )
 
 func init() {
-	d := DialectPostgres
+	dialect := DialectPostgres
 	//drivers[dn] = GetPostgresDriver
 	//dsners[dn] = GetPostgresDSN
-	connectors[d] = GetPostgresConnector
+	connectors[dialect] = GetPostgresConnector
+
+	dialecters[dialect] = IsCompatiblePostgresDialect
 }
 
 var compatiblePostgresDialects = []string{
@@ -24,7 +26,7 @@ var compatiblePostgresDialects = []string{
 	"pgx",
 }
 
-type PostgresConfig struct {
+type PostgresExtra struct {
 	DialFunc pgconn.DialFunc
 
 	AfterConnect pgconn.AfterConnectFunc
@@ -42,7 +44,9 @@ type PostgresConfig struct {
 	DescriptionCacheCapacity int
 }
 
-func (c *PostgresConfig) Validate(ctx context.Context) error {
+var _ Validator = (*PostgresExtra)(nil)
+
+func (c *PostgresExtra) Validate(ctx context.Context) error {
 	if c == nil {
 
 	}
@@ -121,15 +125,15 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	}
 	cc.Config = *pgcc
 
-	if pc := c.Postgres; pc != nil {
-		if pc.Tracer != nil {
-			cc.Tracer = pc.Tracer
+	if ext, ok := c.Extra.(*PostgresExtra); ok && ext != nil {
+		if ext.Tracer != nil {
+			cc.Tracer = ext.Tracer
 		}
-		if pc.StatementCacheCapacity > 0 {
-			cc.StatementCacheCapacity = pc.StatementCacheCapacity
+		if ext.StatementCacheCapacity > 0 {
+			cc.StatementCacheCapacity = ext.StatementCacheCapacity
 		}
-		if pc.DescriptionCacheCapacity > 0 {
-			cc.DescriptionCacheCapacity = pc.DescriptionCacheCapacity
+		if ext.DescriptionCacheCapacity > 0 {
+			cc.DescriptionCacheCapacity = ext.DescriptionCacheCapacity
 		}
 	}
 

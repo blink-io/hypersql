@@ -29,7 +29,8 @@ func GetSQLiteDriver(dialect string) (driver.Driver, error) {
 }
 
 func GetSQLiteConnector(ctx context.Context, c *Config) (driver.Connector, error) {
-	dsn := toSQLiteDSN(c)
+	cc := ToSQLiteConfig(c)
+	dsn := cc.FormatDSN()
 	drv := wrapDriverHooks(getRawSQLiteDriver(), c.DriverHooks...)
 	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }

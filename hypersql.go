@@ -64,11 +64,15 @@ type (
 		Name    string
 		Dialect string
 	}
+
+	Validator interface {
+		Validate(context.Context) error
+	}
 )
 
 func NewSqlDB(c *Config) (*sql.DB, error) {
 	dialect := GetFormalDialect(c.Dialect)
-	connFn := connectors[dialect]
+	connFn := GetConnector(dialect)
 	if connFn == nil {
 		return nil, ErrUnsupportedDialect
 	}
@@ -84,7 +88,7 @@ func NewSqlDB(c *Config) (*sql.DB, error) {
 		otelOps := []OTelOption{
 			OTelDBHostPort(hostPortToAddr(c.Host, c.Port)),
 			OTelDBName(c.Name),
-			OTelDBSystem(c.Dialect),
+			OTelDBSystem(dialect),
 			OTelReportDBStats(),
 			OTelAttrs(c.OTelAttrs...),
 		}
@@ -98,16 +102,21 @@ func NewSqlDB(c *Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	if csql := c.ConnInitSQL; len(csql) > 0 {
-		if _, err := db.Exec(csql); err != nil {
-			return nil, fmt.Errorf("unable to exec conn_init_sql: %s, reason: %s", csql, err)
+	var doExec = func(action string, sql string) error {
+		if len(sql) > 0 {
+			if _, err := db.Exec(sql); err != nil {
+				return fmt.Errorf("unable to exec sql for [%s]: %s, reason: %s", action, sql, err)
+			}
 		}
+		return nil
 	}
-	// Execute validation SQL after bun.DB is initialized
-	if vsql := c.ValidationSQL; len(vsql) > 0 {
-		if _, err := db.Exec(vsql); err != nil {
-			return nil, fmt.Errorf("unable to exec validation_sql: %s, reason: %s", vsql, err)
-		}
+
+	if err := doExec("connection initialization", c.ConnInitSQL); err != nil {
+		return nil, err
+	}
+
+	if err := doExec("validation", c.ValidationSQL); err != nil {
+		return nil, err
 	}
 
 	// Reference: https://bun.uptrace.dev/guide/running-bun-in-production.html

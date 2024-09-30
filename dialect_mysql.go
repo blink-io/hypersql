@@ -20,13 +20,15 @@ var compatibleMySQLDialects = []string{
 }
 
 func init() {
-	d := DialectMySQL
+	dialect := DialectMySQL
 	//drivers[d] = GetMySQLDriver
 	//dsners[d] = GetMySQLDSN
-	connectors[d] = GetMySQLConnector
+	connectors[dialect] = GetMySQLConnector
+
+	dialecters[dialect] = IsCompatibleMySQLDialect
 }
 
-type MySQLConfig struct {
+type MySQLExtra struct {
 	ServerPubKey string
 
 	ConnectionAttributes string
@@ -38,7 +40,9 @@ type MySQLConfig struct {
 	InterpolateParams bool
 }
 
-func (c *MySQLConfig) Validate(ctx context.Context) error {
+var _ Validator = (*MySQLExtra)(nil)
+
+func (c *MySQLExtra) Validate(ctx context.Context) error {
 	if c == nil {
 
 	}
@@ -129,12 +133,12 @@ func ToMySQLConfig(c *Config) *mysql.Config {
 		})
 	}
 
-	if mc := c.MySQL; mc != nil {
-		cc.ServerPubKey = mc.ServerPubKey
-		cc.ConnectionAttributes = mc.ConnectionAttributes
-		cc.CheckConnLiveness = mc.CheckConnLiveness
-		cc.MultiStatements = mc.MultiStatements
-		cc.InterpolateParams = mc.InterpolateParams
+	if ext, ok := c.Extra.(*MySQLExtra); ok && ext != nil {
+		cc.ServerPubKey = ext.ServerPubKey
+		cc.ConnectionAttributes = ext.ConnectionAttributes
+		cc.CheckConnLiveness = ext.CheckConnLiveness
+		cc.MultiStatements = ext.MultiStatements
+		cc.InterpolateParams = ext.InterpolateParams
 	}
 
 	return cc

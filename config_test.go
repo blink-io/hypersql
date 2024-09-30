@@ -45,7 +45,7 @@ func TestParseURL_1(t *testing.T) {
 }
 
 func TestSQLiteConfigValidate_1(t *testing.T) {
-	var o *SQLiteConfig
+	var o *SQLiteExtra
 	err := o.Validate(context.Background())
 	assert.ErrorIs(t, err, ErrNilConfig)
 }
