@@ -51,7 +51,7 @@ type Config struct {
 	Postgres *PostgresConfig
 	SQLite   *SQLiteConfig
 
-	// DSN for internal use
+	// dsn for internal use
 	dsn string
 }
 

@@ -62,15 +62,15 @@ var (
 )
 
 type Error struct {
-	cause error
-
-	// name defines unique id for error
+	// name defines unique name for error
 	name ErrName
 
 	// code in PostgreSQL/SQLite, number in MySQL
 	code string
 
 	message string
+
+	cause error
 }
 
 func (e *Error) Error() string {
@@ -91,15 +91,15 @@ func (e *Error) Cause() error {
 
 // Is when target is *Error and their names are the same.
 func (e *Error) Is(target error) bool {
-	return IsErrEquals(target, e.name)
+	return ErrNameEquals(target, e.name)
+}
+
+func (e *Error) As(code string, message string, cause error) *Error {
+	return NewError(e.name, code, message, cause)
 }
 
 func (e *Error) Clone() *Error {
 	return NewError(e.name, e.code, e.message, e.cause)
-}
-
-func (e *Error) Renew(code string, message string, cause error) *Error {
-	return NewError(e.name, code, message, cause)
 }
 
 func NewError(name ErrName, code string, message string, cause error) *Error {
@@ -140,30 +140,30 @@ func IsErrNoRows(e error) bool {
 	if errors.Is(e, sql.ErrNoRows) {
 		return true
 	}
-	return IsErrEquals(e, ErrNameNoRows)
+	return ErrNameEquals(e, ErrNameNoRows)
 }
 
 func IsErrTooManyRows(e error) bool {
-	return IsErrEquals(e, ErrNameTooManyRows)
+	return ErrNameEquals(e, ErrNameTooManyRows)
 }
 
 func IsErrConstraintCheck(e error) bool {
-	return IsErrEquals(e, ErrNameConstraintCheck)
+	return ErrNameEquals(e, ErrNameConstraintCheck)
 }
 
 func IsErrConstraintUnique(e error) bool {
-	return IsErrEquals(e, ErrNameConstraintUnique)
+	return ErrNameEquals(e, ErrNameConstraintUnique)
 }
 
 func IsErrConstraintNotNull(e error) bool {
-	return IsErrEquals(e, ErrNameConstraintNotNull)
+	return ErrNameEquals(e, ErrNameConstraintNotNull)
 }
 
 func IsErrConstraintForeignKey(e error) bool {
-	return IsErrEquals(e, ErrNameConstraintForeignKey)
+	return ErrNameEquals(e, ErrNameConstraintForeignKey)
 }
 
-func IsErrEquals(e error, name ErrName) bool {
+func ErrNameEquals(e error, name ErrName) bool {
 	if se, ok := isTargetErr[*Error](e); ok {
 		return se.name == name
 	}

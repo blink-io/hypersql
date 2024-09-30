@@ -15,6 +15,8 @@ build-with-sqlite:
 build-with-sqlite-cgo:
 	go build -tags sqlite,sqlite_cgo -v ./...
 
+.PHONY: build-all
+build-all: build build-with-sqlite build-with-sqlite-cgo
 
 .PHONY: test
 test:

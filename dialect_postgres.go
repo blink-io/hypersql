@@ -7,7 +7,6 @@ import (
 	pgparams "github.com/blink-io/hypersql/postgres/params"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -26,8 +25,6 @@ var compatiblePostgresDialects = []string{
 }
 
 type PostgresConfig struct {
-	UsePool bool
-
 	DialFunc pgconn.DialFunc
 
 	AfterConnect pgconn.AfterConnectFunc
@@ -64,7 +61,7 @@ func GetPostgresDSN(dialect string) (Dsner, error) {
 		return nil, ErrUnsupportedDialect
 	}
 	return func(ctx context.Context, c *Config) (string, error) {
-		cc, err := ToPGXConfig(c)
+		cc, err := ToPostgresConfig(c)
 		if err != nil {
 			return "", err
 		}
@@ -74,35 +71,16 @@ func GetPostgresDSN(dialect string) (Dsner, error) {
 }
 
 func GetPostgresConnector(ctx context.Context, c *Config) (driver.Connector, error) {
-	cc, err := ToPGXConfig(c)
+	cc, err := ToPostgresConfig(c)
 	if err != nil {
 		return nil, err
 	}
-
-	var usePool = false
-	if c.Postgres != nil {
-		usePool = c.Postgres.UsePool
-	}
-	if usePool {
-		ppc, errv := pgxpool.ParseConfig("")
-		if errv != nil {
-			return nil, errv
-		}
-		ppc.ConnConfig = cc
-		pool, errp := pgxpool.NewWithConfig(ctx, ppc)
-		if errp != nil {
-			return nil, errp
-		}
-		c.dsn = ppc.ConnString()
-		return stdlib.GetPoolConnector(pool), nil
-	} else {
-		c.dsn = stdlib.RegisterConnConfig(cc)
-		drv := wrapDriverHooks(getRawPostgresDriver(), c.DriverHooks...)
-		return &dsnConnector{dsn: c.dsn, driver: drv}, nil
-	}
+	c.dsn = stdlib.RegisterConnConfig(cc)
+	drv := wrapDriverHooks(getRawPostgresDriver(), c.DriverHooks...)
+	return &dsnConnector{dsn: c.dsn, driver: drv}, nil
 }
 
-func ToPGXConfig(c *Config) (*pgx.ConnConfig, error) {
+func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	name := c.Name
 	host := c.Host
 	port := c.Port
@@ -156,21 +134,6 @@ func ToPGXConfig(c *Config) (*pgx.ConnConfig, error) {
 	}
 
 	return cc, nil
-}
-
-func ToPGXPoolConfig(c *Config) (*pgxpool.Config, error) {
-	ppc, err := pgxpool.ParseConfig("")
-	if err != nil {
-		return nil, err
-	}
-
-	cfg, err := ToPGXConfig(c)
-	if err != nil {
-		return nil, err
-	}
-
-	ppc.ConnConfig = cfg
-	return ppc, nil
 }
 
 func getRawPostgresDriver() driver.Driver {

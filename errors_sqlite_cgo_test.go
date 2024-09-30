@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func TestSQLite3ErrNo_Actual(t *testing.T) {
+func TestSQLite3_ErrNo_Actual(t *testing.T) {
 	nn := map[string]sqlite3.ErrNoExtended{
 		"notnull": sqlite3.ErrConstraintNotNull,
 		"unique":  sqlite3.ErrConstraintUnique,

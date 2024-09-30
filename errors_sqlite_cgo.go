@@ -13,17 +13,17 @@ var sqliteErrorHandlers = map[int]func(*SQLiteError) *Error{
 	// SQLITE_CONSTRAINT_CHECK (275)
 	275: func(e *SQLiteError) *Error {
 		code := cast.ToString(int(e.ExtendedCode))
-		return ErrConstraintCheck.Renew(code, e.Error(), e)
+		return ErrConstraintCheck.As(code, e.Error(), e)
 	},
 	// SQLITE_CONSTRAINT_FOREIGNKEY (787)
 	787: func(e *SQLiteError) *Error {
 		code := cast.ToString(int(e.ExtendedCode))
-		return ErrConstraintForeignKey.Renew(code, e.Error(), e)
+		return ErrConstraintForeignKey.As(code, e.Error(), e)
 	},
 	// SQLITE_CONSTRAINT_NOTNULL (1299)
 	1299: func(e *SQLiteError) *Error {
 		code := cast.ToString(int(e.ExtendedCode))
-		return ErrConstraintNotNull.Renew(code, e.Error(), e)
+		return ErrConstraintNotNull.As(code, e.Error(), e)
 	},
 	// SQLITE_CONSTRAINT_PRIMARYKEY (1555).
 	// Notes: In DBMS, primary key is a unique key too.
@@ -39,7 +39,7 @@ func RegisterSQLiteErrorHandler(number int, fn func(*SQLiteError) *Error) {
 
 func sqliteUniqueConstraintHandler(e *SQLiteError) *Error {
 	code := cast.ToString(int(e.ExtendedCode))
-	return ErrConstraintUnique.Renew(code, e.Error(), e)
+	return ErrConstraintUnique.As(code, e.Error(), e)
 }
 
 // handleSQLiteError transforms *sqlite3.Error to *Error.
@@ -49,6 +49,6 @@ func handleSQLiteError(e *SQLiteError) *Error {
 	if h, ok := sqliteErrorHandlers[code]; ok {
 		return h(e)
 	} else {
-		return ErrOther.Renew(cast.ToString(code), e.Error(), e)
+		return ErrOther.As(cast.ToString(code), e.Error(), e)
 	}
 }

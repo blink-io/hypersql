@@ -34,5 +34,5 @@ func GetSQLiteConnector(ctx context.Context, c *Config) (driver.Connector, error
 }
 
 func handleSQLiteError(e *SQLiteError) *Error {
-	return ErrOther.Renew(cast.ToString(e.Code), e.Error(), e)
+	return ErrOther.As(cast.ToString(e.Code), e.Error(), e)
 }

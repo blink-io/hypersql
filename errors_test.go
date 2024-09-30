@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite"
 	//"github.com/glebarez/go-SQLite"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -33,7 +33,7 @@ func TestMySQLErr(t *testing.T) {
 }
 
 func TestSQLiteErr(t *testing.T) {
-	var err = &sqlite.Error{}
+	var err = &sqlite3.Error{}
 
 	newErr := WrapError(err)
 
@@ -46,7 +46,7 @@ func TestErrEqual(t *testing.T) {
 	var cause3 = errors.New("cause2 from blink-x")
 	var err1 = NewError("good", "very good1", "", cause1)
 	var err2 = NewError("good", "very good2", "", cause2)
-	var err3 = err1.Renew("babamama", "Very BabaMama", cause3)
+	var err3 = err1.As("babamama", "Very BabaMama", cause3)
 
 	b1 := errors.Is(err1, err2)
 	b2 := errors.Is(err3, err2)

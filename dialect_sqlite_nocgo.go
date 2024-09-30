@@ -5,9 +5,9 @@ package hypersql
 import (
 	"database/sql/driver"
 
-	"modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite"
 )
 
 func getRawSQLiteDriver() driver.Driver {
-	return &sqlite.Driver{}
+	return &sqlite3.Driver{}
 }

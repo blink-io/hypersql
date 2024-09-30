@@ -10,21 +10,21 @@ var mysqlErrorHandlers = map[uint16]func(*mysql.MySQLError) *Error{
 	// Message: Can't write, because of unique constraint, to table '%s'
 	1169: func(e *mysql.MySQLError) *Error {
 		code := cast.ToString(e.Number)
-		return ErrConstraintUnique.Renew(code, e.Message, e)
+		return ErrConstraintUnique.As(code, e.Message, e)
 	},
 
 	// Error number: 1172; Symbol: ER_TOO_MANY_ROWS; SQLSTATE: 42000
 	// Message: Result consisted of more than one row
 	1172: func(e *mysql.MySQLError) *Error {
 		code := cast.ToString(e.Number)
-		return ErrTooManyRows.Renew(code, e.Message, e)
+		return ErrTooManyRows.As(code, e.Message, e)
 	},
 
 	// Error number: 1329; Symbol: ER_SP_FETCH_NO_DATA; SQLSTATE: 02000
 	// Message: No data - zero rows fetched, selected, or processed
 	1329: func(e *mysql.MySQLError) *Error {
 		code := cast.ToString(e.Number)
-		return ErrNoRows.Renew(code, e.Message, e)
+		return ErrNoRows.As(code, e.Message, e)
 	},
 
 	// Error number: 1216; Symbol: ER_NO_REFERENCED_ROW; SQLSTATE: 23000
@@ -38,7 +38,7 @@ var mysqlErrorHandlers = map[uint16]func(*mysql.MySQLError) *Error{
 	// Error number: 1263; Symbol: ER_WARN_NULL_TO_NOTNULL; SQLSTATE: 22004
 	1263: func(e *mysql.MySQLError) *Error {
 		code := cast.ToString(e.Number)
-		return ErrConstraintNotNull.Renew(code, e.Message, e)
+		return ErrConstraintNotNull.As(code, e.Message, e)
 	},
 
 	// Error number: 1451; Symbol: ER_ROW_IS_REFERENCED_2; SQLSTATE: 23000
@@ -66,12 +66,12 @@ func RegisterMySQLErrorHandler(number uint16, fn func(*mysql.MySQLError) *Error)
 
 func mysqlFKConstraintErrHandler(e *mysql.MySQLError) *Error {
 	code := cast.ToString(e.Number)
-	return ErrConstraintForeignKey.Renew(code, e.Message, e)
+	return ErrConstraintForeignKey.As(code, e.Message, e)
 }
 
 func mysqlCheckConstraintErrHandler(e *mysql.MySQLError) *Error {
 	code := cast.ToString(e.Number)
-	return ErrConstraintForeignKey.Renew(code, e.Message, e)
+	return ErrConstraintForeignKey.As(code, e.Message, e)
 }
 
 // handleMySQLError transforms *mysql.MySQLError to *Error.
@@ -99,6 +99,6 @@ func handleMySQLError(e *mysql.MySQLError) *Error {
 	if h, ok := mysqlErrorHandlers[e.Number]; ok {
 		return h(e)
 	} else {
-		return ErrOther.Renew(cast.ToString(e.Number), e.Message, e)
+		return ErrOther.As(cast.ToString(e.Number), e.Message, e)
 	}
 }
