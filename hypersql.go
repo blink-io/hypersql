@@ -24,6 +24,8 @@ var (
 	ErrUnsupportedDialect = errors.New("unsupported dialect")
 
 	ErrUnsupportedDriver = errors.New("unsupported driver")
+
+	InvalidConfig = errors.New("invalid config")
 )
 
 type (

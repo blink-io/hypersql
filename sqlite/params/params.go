@@ -6,7 +6,7 @@ const (
 
 	AuthUser = "_auth_user"
 
-	AuthPassword = "_auth_pass"
+	AuthPass = "_auth_pass"
 
 	AuthCrypt = "_auth_crypt"
 
@@ -14,13 +14,13 @@ const (
 
 	AutoVacuum = "_auto_vacuum"
 
-	Vacuum = "_auto_vacuum"
+	Vacuum = "_vacuum"
 
 	BusyTimeout = "_busy_timeout"
 
 	Timeout = "_timeout"
 
-	CaseSensitiveLikie = "_case_sensitive_like"
+	CaseSensitiveLike = "_case_sensitive_like"
 
 	CSLike = "_cslike"
 
@@ -34,6 +34,10 @@ const (
 
 	IgnoreCheckConstraints = "_ignore_check_constraints" // boolean
 
+	JournalMode = "_journal_mode"
+
+	Journal = "_journal"
+
 	Immutable = "immutable"
 
 	LockingMode = "_locking_mode"
@@ -44,7 +48,7 @@ const (
 
 	Mode = "mode"
 
-	Mutext = "_mutex"
+	Mutex = "_mutex"
 
 	QueryOnly = "_query_only" // boolean
 
@@ -60,9 +64,11 @@ const (
 
 	Sync = "_sync"
 
-	TransactionLock = "_txlock"
+	TxLock = "_txlock"
 
 	WritableSchema = "_writable_schema"
 
 	CacheSize = "_cache_size"
+
+	Cache = "cache"
 )

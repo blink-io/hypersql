@@ -54,7 +54,10 @@ func GetMySQLDSN(dialect string) (Dsner, error) {
 		return nil, ErrUnsupportedDialect
 	}
 	return func(ctx context.Context, c *Config) (string, error) {
-		cc := ToMySQLConfig(c)
+		cc, err := ToMySQLConfig(c)
+		if err != nil {
+			return "", err
+		}
 		dsn := cc.FormatDSN()
 		return dsn, nil
 	}, nil
@@ -68,13 +71,16 @@ func GetMySQLDriver(dialect string) (driver.Driver, error) {
 }
 
 func GetMySQLConnector(ctx context.Context, c *Config) (driver.Connector, error) {
-	cc := ToMySQLConfig(c)
+	cc, err := ToMySQLConfig(c)
+	if err != nil {
+
+	}
 	dsn := cc.FormatDSN()
 	drv := wrapDriverHooks(getRawMySQLDriver(), c.DriverHooks...)
 	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }
 
-func ToMySQLConfig(c *Config) *mysql.Config {
+func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	network := c.Network
 	name := c.Name
 	host := c.Host
@@ -141,7 +147,7 @@ func ToMySQLConfig(c *Config) *mysql.Config {
 		cc.InterpolateParams = ext.InterpolateParams
 	}
 
-	return cc
+	return cc, nil
 }
 
 func IsCompatibleMySQLDialect(dialect string) bool {

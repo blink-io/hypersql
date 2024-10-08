@@ -16,6 +16,22 @@ var (
 
 type ConfigParams map[string]string
 
+func (p ConfigParams) Get(keys ...string) string {
+	if len(keys) > 0 {
+		for _, key := range keys {
+			if v := p[key]; len(v) > 0 {
+				return v
+			}
+		}
+	}
+	return ""
+}
+
+func (p ConfigParams) Exists(key string) bool {
+	_, ok := p[key]
+	return ok
+}
+
 type DriverHooks []sqlhooks.Hooks
 
 type Config struct {
