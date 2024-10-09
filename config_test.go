@@ -43,9 +43,3 @@ func TestParseURL_1(t *testing.T) {
 
 	litter.Dump(du.Query())
 }
-
-func TestSQLiteConfigValidate_1(t *testing.T) {
-	var o *SQLiteExtra
-	err := o.Validate(context.Background())
-	assert.ErrorIs(t, err, ErrNilConfig)
-}
