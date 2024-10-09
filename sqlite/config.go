@@ -103,7 +103,7 @@ type Config struct {
 }
 
 func (c *Config) FormatDSN() string {
-	if strings.HasPrefix(c.Name, "file:") {
+	if !strings.HasPrefix(c.Name, "file:") {
 		return c.Name
 	}
 
@@ -192,7 +192,7 @@ func (c *Config) FormatDSN() string {
 		dsnBuilder.WriteString(kv(joint, "", params.WritableSchema, c.WritableSchema))
 	}
 
-	return c.Name
+	return dsnBuilder.String()
 }
 
 func IsTrue(v any) bool {

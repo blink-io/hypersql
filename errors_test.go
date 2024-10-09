@@ -7,11 +7,10 @@ import (
 
 	"github.com/spf13/cast"
 
-	sqlite3 "modernc.org/sqlite"
-	//"github.com/glebarez/go-SQLite"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/require"
+	sqlite3 "modernc.org/sqlite"
 )
 
 func TestPgErr(t *testing.T) {
