@@ -5,10 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"net"
 	"runtime"
-
-	"github.com/spf13/cast"
 )
 
 const (
@@ -85,19 +82,7 @@ func NewSqlDB(c *Config) (*sql.DB, error) {
 		return nil, err
 	}
 
-	var db *sql.DB
-	if c.WithOTel {
-		otelOps := []OTelOption{
-			OTelDBHostPort(hostPortToAddr(c.Host, c.Port)),
-			OTelDBName(c.Name),
-			OTelDBSystem(dialect),
-			OTelReportDBStats(),
-			OTelAttrs(c.OTelAttrs...),
-		}
-		db = otelOpenDB(conn, otelOps...)
-	} else {
-		db = otelWrapper(sql.OpenDB)(conn)
-	}
+	db := sql.OpenDB(conn)
 
 	// Do ping check
 	if err := DoPingContext(ctx, db); err != nil {
@@ -153,8 +138,4 @@ func NewDBInfo(c *Config) DBInfo {
 		Name:    c.Name,
 		Dialect: c.Dialect,
 	}
-}
-
-func hostPortToAddr(host string, port int) string {
-	return net.JoinHostPort(host, cast.ToString(port))
 }

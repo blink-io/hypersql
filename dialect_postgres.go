@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql/driver"
 
-	pgparams "github.com/blink-io/hypersql/postgres/params"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -95,12 +94,6 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	params := c.Params
 	if params == nil {
 		params = make(map[string]string)
-	}
-	if len(c.ClientName) > 0 {
-		params[pgparams.ApplicationName] = c.ClientName
-	}
-	if len(c.Collation) > 0 {
-		params[pgparams.ClientEncoding] = c.Collation
 	}
 
 	pgcc, err := pgconn.ParseConfig("")

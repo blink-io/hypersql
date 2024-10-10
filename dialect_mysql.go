@@ -90,7 +90,6 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	dialTimeout := c.DialTimeout
 	tlsConfig := c.TLSConfig
 	loc := c.Loc
-	collation := c.Collation
 	params := c.Params
 
 	if loc == nil {
@@ -98,12 +97,6 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	}
 	if params == nil {
 		params = make(map[string]string)
-	}
-	if len(c.ClientName) > 0 {
-		params[mysqlparams.ProgramName] = c.ClientName
-	}
-	if len(c.Collation) > 0 {
-		params[mysqlparams.Collation] = c.Collation
 	}
 
 	// Restful TLS Params
@@ -121,7 +114,9 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	}
 	// TODO Do we need to check them?
 	cc.Params = handleMySQLParams(params)
-	cc.Collation = collation
+	params.IfNotEmpty(mysqlparams.Collation, func(value string) {
+		cc.Collation = value
+	})
 	if network == "tcp" {
 		cc.Addr = net.JoinHostPort(host, cast.ToString(port))
 	} else {

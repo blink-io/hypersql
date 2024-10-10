@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql/driver"
 	"errors"
+	"net"
+	"strconv"
 )
 
 // DoPingContext does invoke ping(context.Context).
@@ -13,4 +15,12 @@ func DoPingContext(ctx context.Context, pinger Pinger) error {
 		return err
 	}
 	return nil
+}
+
+func hostPortToAddr(host string, port int) string {
+	return net.JoinHostPort(host, strconv.Itoa(port))
+}
+
+func return1OnError[T any](err error) (*T, error) {
+	return nil, err
 }

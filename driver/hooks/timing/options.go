@@ -1,9 +1,9 @@
 package timing
 
-type Option func(*hook)
+type Option func(*Hook)
 
 func Logf(logf func(string, ...any)) Option {
-	return func(h *hook) {
+	return func(h *Hook) {
 		h.logf = logf
 	}
 }

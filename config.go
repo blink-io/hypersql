@@ -7,60 +7,39 @@ import (
 	"time"
 
 	"github.com/qustavo/sqlhooks/v2"
-	"go.opentelemetry.io/otel/attribute"
 )
 
 var (
 	ErrNilConfig = errors.New("[hypersql] config is nil")
 )
 
-type ConfigParams map[string]string
-
-func (p ConfigParams) Get(keys ...string) string {
-	if len(keys) > 0 {
-		for _, key := range keys {
-			if v := p[key]; len(v) > 0 {
-				return v
-			}
-		}
-	}
-	return ""
-}
-
-func (p ConfigParams) Exists(key string) bool {
-	_, ok := p[key]
-	return ok
-}
-
 type DriverHooks []sqlhooks.Hooks
 
 type Config struct {
-	Network         string
-	Dialect         string
-	Host            string
-	Port            int
-	Name            string
-	User            string
-	Password        string
-	TLSConfig       *tls.Config
-	Params          ConfigParams
-	DialTimeout     time.Duration
+	Network       string
+	Dialect       string
+	Host          string
+	Port          int
+	Name          string
+	User          string
+	Password      string
+	Params        ConfigParams
+	TLSConfig     *tls.Config
+	DialTimeout   time.Duration
+	ConnInitSQL   string
+	ValidationSQL string
+	Loc           *time.Location
+	DriverHooks   DriverHooks
+	Logger        Logger
+
+	// Connection parameters
 	ConnMaxLifetime time.Duration
 	ConnMaxIdleTime time.Duration
 	MaxOpenConns    int
 	MaxIdleConns    int
-	ConnInitSQL     string
-	ValidationSQL   string
-	DriverHooks     DriverHooks
-	Loc             *time.Location
-	Debug           bool
-	Collation       string
-	ClientName      string
-	Logger          Logger
 
-	// OpenTelemetry
-	WithOTel  bool
-	OTelAttrs []attribute.KeyValue
+	// Enable debug
+	Debug bool
 
 	// Database extra config
 	Extra any
