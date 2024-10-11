@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql/driver"
 
+	pgparams "github.com/blink-io/hypersql/postgres/params"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/multitracer"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/stdlib"
 )
@@ -36,7 +38,7 @@ type PostgresExtra struct {
 
 	OnNotification pgconn.NotificationHandler
 
-	Tracer pgx.QueryTracer
+	Tracers []pgx.QueryTracer
 
 	StatementCacheCapacity int
 
@@ -100,6 +102,9 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	if params == nil {
 		params = make(map[string]string)
 	}
+	if !params.Exists(pgparams.ApplicationName) {
+		params[pgparams.ApplicationName] = "go-client-pgx(v5)"
+	}
 
 	pgcc, err := pgconn.ParseConfig("")
 	if err != nil {
@@ -124,8 +129,8 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	cc.Config = *pgcc
 
 	if ext, ok := c.Extra.(*PostgresExtra); ok && ext != nil {
-		if ext.Tracer != nil {
-			cc.Tracer = ext.Tracer
+		if tracers := ext.Tracers; len(tracers) > 0 {
+			cc.Tracer = multitracer.New(tracers...)
 		}
 		if ext.StatementCacheCapacity > 0 {
 			cc.StatementCacheCapacity = ext.StatementCacheCapacity
