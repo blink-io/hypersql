@@ -130,6 +130,12 @@ func NewSqlDB(c *Config) (*sql.DB, error) {
 		db.SetConnMaxLifetime(connMaxLifetime)
 	}
 
+	for _, h := range c.SqlDBHandlers {
+		if err = h(ctx, db); err != nil {
+			return nil, fmt.Errorf("sql.DB can not be handle, reason:%s", err.Error())
+		}
+	}
+
 	return db, nil
 }
 
