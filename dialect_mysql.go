@@ -119,7 +119,7 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	}
 	// TODO Do we need to check them?
 	cc.Params = handleMySQLParams(params)
-	params.IfNotEmpty(mysqlparams.Collation, func(value string) {
+	params.IfNotEmpty(mysqlparams.ConnParams.Collation, func(value string) {
 		cc.Collation = value
 	})
 	if network == "tcp" {
