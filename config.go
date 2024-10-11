@@ -31,7 +31,7 @@ type Config struct {
 	DriverHooks    DriverHooks
 	DriverWrappers DriverWrappers
 
-	SqlDBHandlers SqlDBHandlers
+	AfterHandlers AfterHandlers
 
 	// Connection parameters
 	ConnMaxLifetime time.Duration

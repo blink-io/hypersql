@@ -51,21 +51,8 @@ type (
 		SqlDB() *sql.DB
 	}
 
-	WithDBInfo interface {
-		DBInfo() DBInfo
-	}
-
 	HealthChecker interface {
 		HealthCheck(context.Context) error
-	}
-
-	DBInfo struct {
-		Name    string
-		Dialect string
-	}
-
-	Validator interface {
-		Validate(context.Context) error
 	}
 )
 
@@ -87,6 +74,12 @@ func NewSqlDB(c *Config) (*sql.DB, error) {
 	// Do ping check
 	if err := DoPingContext(ctx, db); err != nil {
 		return nil, err
+	}
+
+	for _, h := range c.AfterHandlers {
+		if err = h(ctx, db); err != nil {
+			return nil, fmt.Errorf("sql.DB can not be handle, reason:%s", err.Error())
+		}
 	}
 
 	var doExec = func(action string, sql string) error {
@@ -130,18 +123,5 @@ func NewSqlDB(c *Config) (*sql.DB, error) {
 		db.SetConnMaxLifetime(connMaxLifetime)
 	}
 
-	for _, h := range c.SqlDBHandlers {
-		if err = h(ctx, db); err != nil {
-			return nil, fmt.Errorf("sql.DB can not be handle, reason:%s", err.Error())
-		}
-	}
-
 	return db, nil
-}
-
-func NewDBInfo(c *Config) DBInfo {
-	return DBInfo{
-		Name:    c.Name,
-		Dialect: c.Dialect,
-	}
 }

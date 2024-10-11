@@ -73,11 +73,11 @@ func GetMySQLDriver(dialect string) (driver.Driver, error) {
 func GetMySQLConnector(ctx context.Context, c *Config) (driver.Connector, error) {
 	cc, err := ToMySQLConfig(c)
 	if err != nil {
-
+		return nil, err
 	}
-	dsn := cc.FormatDSN()
+	c.dsn = cc.FormatDSN()
 	drv := wrapDriver(getRawMySQLDriver(), c.DriverWrappers, c.DriverHooks)
-	return &dsnConnector{dsn: dsn, driver: drv}, nil
+	return &dsnConnector{dsn: c.dsn, driver: drv}, nil
 }
 
 func ToMySQLConfig(c *Config) (*mysql.Config, error) {

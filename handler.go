@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	SqlDBHandler func(context.Context, *sql.DB) error
+	AfterHandler func(context.Context, *sql.DB) error
 
-	SqlDBHandlers []SqlDBHandler
+	AfterHandlers []AfterHandler
 )

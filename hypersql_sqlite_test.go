@@ -38,7 +38,7 @@ func TestSqlite_Driver_1(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		c.SqlDBHandlers = SqlDBHandlers{
+		c.AfterHandlers = AfterHandlers{
 			func(ctx context.Context, db *sql.DB) error {
 				return otelsql.RegisterDBStatsMetrics(db)
 			},
@@ -60,7 +60,7 @@ func TestSqlite_Driver_1(t *testing.T) {
 	})
 
 	t.Run("fail", func(t *testing.T) {
-		c.SqlDBHandlers = SqlDBHandlers{
+		c.AfterHandlers = AfterHandlers{
 			func(ctx context.Context, db *sql.DB) error {
 				return errors.New("throw an error for fail")
 			},
