@@ -83,6 +83,11 @@ func GetPostgresConnector(ctx context.Context, c *Config) (driver.Connector, err
 	return &dsnConnector{dsn: c.dsn, driver: drv}, nil
 }
 
+func (c *Config) ToPostgres() {
+	c.Dialect = DialectPostgres
+	c.Port = 5432
+}
+
 func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	name := c.Name
 	host := c.Host

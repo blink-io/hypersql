@@ -24,6 +24,10 @@ func init() {
 	dialecters[dialect] = IsCompatibleSQLiteDialect
 }
 
+func (c *Config) ToSQLite() {
+	c.Dialect = DialectSQLite
+}
+
 func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 	params := c.Params
 

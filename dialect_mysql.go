@@ -80,6 +80,11 @@ func GetMySQLConnector(ctx context.Context, c *Config) (driver.Connector, error)
 	return &dsnConnector{dsn: c.dsn, driver: drv}, nil
 }
 
+func (c *Config) toMySQL() {
+	c.Dialect = DialectMySQL
+	c.Port = 3306
+}
+
 func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	network := c.Network
 	name := c.Name
