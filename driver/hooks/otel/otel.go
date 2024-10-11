@@ -7,7 +7,7 @@ import (
 type Hook struct {
 }
 
-func New() *Hook {
+func New(ops ...Option) *Hook {
 	h := &Hook{}
 	return h
 }

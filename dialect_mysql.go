@@ -76,7 +76,7 @@ func GetMySQLConnector(ctx context.Context, c *Config) (driver.Connector, error)
 
 	}
 	dsn := cc.FormatDSN()
-	drv := wrapDriverHooks(getRawMySQLDriver(), c.DriverHooks...)
+	drv := wrapDriver(getRawMySQLDriver(), c.DriverWrappers, c.DriverHooks)
 	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }
 

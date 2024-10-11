@@ -57,9 +57,20 @@ func isCompatibleDialectIn(dialect string, compatibleDialects []string) bool {
 	return flag
 }
 
+func wrapDriver(drv driver.Driver, wrappers DriverWrappers, hooks DriverHooks) driver.Driver {
+	return wrapDriverHooks(wrapDriverWrappers(drv, wrappers...), hooks...)
+}
+
 func wrapDriverHooks(drv driver.Driver, drvHooks ...sqlhooks.Hooks) driver.Driver {
 	if len(drvHooks) > 0 {
 		drv = sqlhooks.Wrap(drv, sqlhooks.Compose(drvHooks...))
+	}
+	return drv
+}
+
+func wrapDriverWrappers(drv driver.Driver, wrappers ...DriverWrapper) driver.Driver {
+	for _, w := range wrappers {
+		drv = w(drv)
 	}
 	return drv
 }

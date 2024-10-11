@@ -18,6 +18,7 @@ func (p ConfigParams) Exists(key string) bool {
 	return ok
 }
 
+// IfExists represents the given function will be executed if the key exists.
 func (p ConfigParams) IfExists(key string, then func(value string)) {
 	v, ok := p[key]
 	if ok {
@@ -25,6 +26,7 @@ func (p ConfigParams) IfExists(key string, then func(value string)) {
 	}
 }
 
+// IfNotEmpty represents the given function will be executed if the key exists and the value is not empty.
 func (p ConfigParams) IfNotEmpty(key string, then func(value string)) {
 	v, ok := p[key]
 	if ok && len(v) > 0 {

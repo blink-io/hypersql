@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/XSAM/otelsql v0.34.0
 	github.com/exaring/otelpgx v0.6.2
 	github.com/getsentry/sentry-go v0.29.0
 	github.com/go-sql-driver/mysql v1.8.1

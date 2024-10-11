@@ -5,15 +5,11 @@ import (
 	"crypto/tls"
 	"errors"
 	"time"
-
-	"github.com/qustavo/sqlhooks/v2"
 )
 
 var (
 	ErrNilConfig = errors.New("[hypersql] config is nil")
 )
-
-type DriverHooks []sqlhooks.Hooks
 
 type Config struct {
 	Network       string
@@ -29,8 +25,11 @@ type Config struct {
 	ConnInitSQL   string
 	ValidationSQL string
 	Loc           *time.Location
-	DriverHooks   DriverHooks
 	Logger        Logger
+
+	// Driver related
+	DriverHooks    DriverHooks
+	DriverWrappers DriverWrappers
 
 	// Connection parameters
 	ConnMaxLifetime time.Duration
