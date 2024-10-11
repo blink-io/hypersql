@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql/driver"
 
-	pgparams "github.com/blink-io/hypersql/postgres/params"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/multitracer"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -101,9 +100,6 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	params := c.Params
 	if params == nil {
 		params = make(map[string]string)
-	}
-	if !params.Exists(pgparams.ApplicationName) {
-		params[pgparams.ApplicationName] = "go-client-pgx(v5)"
 	}
 
 	pgcc, err := pgconn.ParseConfig("")

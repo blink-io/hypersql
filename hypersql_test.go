@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,4 +22,11 @@ func TestLocation_1(t *testing.T) {
 	loc, err := time.LoadLocation("Asia/Shanghai")
 	require.NoError(t, err)
 	require.NotNil(t, loc)
+}
+
+func TestPgxParseConfig(t *testing.T) {
+	str := "sslmode=disable"
+	cc, err := pgx.ParseConfig(str)
+	require.NoError(t, err)
+	require.NotNil(t, cc)
 }
