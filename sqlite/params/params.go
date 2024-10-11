@@ -1,74 +1,114 @@
 package params
 
+// ConnParams represents the supported connection parameters.
 // Source: https://github.com/mattn/go-sqlite3#connection-string
-const (
-	Auth = "_auth"
+var ConnParams = connParams{
+	Auth: "_auth",
 
-	AuthUser = "_auth_user"
+	AuthUser: "_auth_user",
 
-	AuthPass = "_auth_pass"
+	AuthPass: "_auth_pass",
 
-	AuthCrypt = "_auth_crypt"
+	AuthCrypt: "_auth_crypt",
 
-	AuthSalt = "_auth_salt"
+	AuthSalt: "_auth_salt",
 
-	AutoVacuum = "_auto_vacuum"
+	AutoVacuum: "_auto_vacuum",
 
-	Vacuum = "_vacuum"
+	Vacuum: "_vacuum",
 
-	BusyTimeout = "_busy_timeout"
+	BusyTimeout: "_busy_timeout",
 
-	Timeout = "_timeout"
+	Timeout: "_timeout",
 
-	CaseSensitiveLike = "_case_sensitive_like"
+	CaseSensitiveLike: "_case_sensitive_like",
 
-	CSLike = "_cslike"
+	CSLike: "_cslike",
 
-	DeferForeignKeys = "_defer_foreign_keys" // boolean
+	DeferForeignKeys: "_defer_foreign_keys", // boolean
 
-	DeferFK = "_defer_fk" // boolean
+	DeferFK: "_defer_fk", // boolean
 
-	ForeignKeys = "_foreign_keys" // boolean
+	ForeignKeys: "_foreign_keys", // boolean
 
-	FK = "_fk" // boolean
+	FK: "_fk", // boolean
 
-	IgnoreCheckConstraints = "_ignore_check_constraints" // boolean
+	IgnoreCheckConstraints: "_ignore_check_constraints", // boolean
 
-	JournalMode = "_journal_mode"
+	JournalMode: "_journal_mode",
 
-	Journal = "_journal"
+	Journal: "_journal",
 
-	Immutable = "immutable"
+	Immutable: "immutable",
 
-	LockingMode = "_locking_mode"
+	LockingMode: "_locking_mode",
 
-	Locking = "_locking"
+	Locking: "_locking",
 
-	Loc = "_loc"
+	Loc: "_loc",
 
-	Mode = "mode"
+	Mode: "mode",
 
-	Mutex = "_mutex"
+	Cache: "cache",
 
-	QueryOnly = "_query_only" // boolean
+	Mutex: "_mutex",
 
-	RecursiveTriggers = "_recursive_triggers" // boolean
+	QueryOnly: "_query_only", // boolean
 
-	RT = "_rt" // boolean
+	RecursiveTriggers: "_recursive_triggers", // boolean
 
-	SecureDelete = "_secure_delete"
+	RT: "_rt", // boolean
 
-	SharedCacheMode = "cache"
+	SecureDelete: "_secure_delete",
 
-	Synchronous = "_synchronous"
+	SharedCacheMode: "cache",
 
-	Sync = "_sync"
+	Synchronous: "_synchronous",
 
-	TxLock = "_txlock"
+	Sync: "_sync",
 
-	WritableSchema = "_writable_schema"
+	TxLock: "_txlock",
 
-	CacheSize = "_cache_size"
+	WritableSchema: "_writable_schema",
 
-	Cache = "cache"
-)
+	CacheSize: "_cache_size",
+}
+
+type connParams struct {
+	Auth                   string
+	AuthUser               string
+	AuthPass               string
+	AuthCrypt              string
+	AuthSalt               string
+	AutoVacuum             string
+	Vacuum                 string
+	BusyTimeout            string
+	Timeout                string
+	CaseSensitiveLike      string
+	CSLike                 string
+	DeferForeignKeys       string
+	DeferFK                string
+	ForeignKeys            string
+	FK                     string
+	IgnoreCheckConstraints string
+	JournalMode            string
+	Journal                string
+	Immutable              string
+	Loc                    string
+	Locale                 string
+	LockingMode            string
+	Locking                string
+	Mode                   string
+	Cache                  string
+	Mutex                  string
+	QueryOnly              string
+	RecursiveTriggers      string
+	RT                     string
+	SecureDelete           string
+	SharedCacheMode        string
+	Synchronous            string
+	Sync                   string
+	TxLock                 string
+	WritableSchema         string
+	CacheSize              string
+}

@@ -89,6 +89,17 @@ func (c *Config) ToPostgres() {
 	c.Port = 5432
 }
 
+// ToPostgresConfigFromDSN
+// See: https://github.com/jackc/pgx/blob/v5.4.0/conn.go#L101
+// See: https://github.com/lib/pq/blob/v1.10.9/url.go#L32
+func ToPostgresConfigFromDSN(dsn string) (*pgx.ConnConfig, error) {
+	cc, err := pgx.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+	return cc, err
+}
+
 func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	name := c.Name
 	host := c.Host

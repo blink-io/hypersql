@@ -2,7 +2,29 @@ package params
 
 // Source: https://dev.mysql.com/doc/refman/8.2/en/connecting-using-uri-or-key-value-pairs.html
 
-var ConnParams = struct {
+var ConnParams = connParams{
+	Host:       "host",
+	Port:       "port",
+	Socket:     "socket",
+	Schema:     "schema",
+	User:       "user",
+	Password:   "password",
+	Loc:        "loc",
+	SSLMode:    "ssl-mode",
+	SSLCA:      "ssl-ca",
+	SSLCAPath:  "ssl-ca-path",
+	SSLCert:    "ssl-cert",
+	SSLCRL:     "ssl-crl",
+	SSLCrlpath: "ssl-crlpath",
+	SSLKey:     "ssl-key",
+	TLSVersion: "tls-version",
+	AutoMethod: "auth-method",
+	Collation:  "collation",
+	Compress:   "compress",
+	ParseTime:  "parseTime",
+}
+
+type connParams struct {
 	// Host specifies the host on which the server instance is running.
 	Host string
 
@@ -57,24 +79,4 @@ var ConnParams = struct {
 	Compress string
 
 	ParseTime string
-}{
-	Host:       "host",
-	Port:       "port",
-	Socket:     "socket",
-	Schema:     "schema",
-	User:       "user",
-	Password:   "password",
-	Loc:        "loc",
-	SSLMode:    "ssl-mode",
-	SSLCA:      "ssl-ca",
-	SSLCAPath:  "ssl-ca-path",
-	SSLCert:    "ssl-cert",
-	SSLCRL:     "ssl-crl",
-	SSLCrlpath: "ssl-crlpath",
-	SSLKey:     "ssl-key",
-	TLSVersion: "tls-version",
-	AutoMethod: "auth-method",
-	Collation:  "collation",
-	Compress:   "compress",
-	ParseTime:  "parseTime",
 }

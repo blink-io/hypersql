@@ -1,8 +1,51 @@
 package params
 
+import (
+	"strings"
+)
+
 // ConnParams specifies connection params.
 // Source: https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
-var ConnParams = struct {
+var ConnParams = connParams{
+	Host:                    "host",
+	Port:                    "port",
+	Hostaddr:                "hostaddr",
+	DBName:                  "dbname",
+	User:                    "user",
+	Passfile:                "passfile",
+	ChannelBinding:          "channel_binding",
+	RequireAuth:             "require_auth",
+	Keepalives:              "keepalives",
+	KeepalivesIdle:          "keepalives_idle",
+	KeepalivesInterval:      "keepalives_interval",
+	KeepalivesCount:         "keepalives_count",
+	Replication:             "replication",
+	Options:                 "options",
+	TCPUserTimeout:          "tcp_user_timeout",
+	ApplicationName:         "application_name",
+	FallbackApplicationName: "fallback_application_name",
+	ClientEncoding:          "client_encoding",
+	SSLMode:                 "sslmode",
+	SSLKey:                  "sslkey",
+	SSLCert:                 "sslcert",
+	SSLRootCert:             "sslrootcert",
+	SSLPassword:             "sslpassword",
+	SSLCertMode:             "sslcertmode",
+	SSLCRL:                  "sslcrl",
+	SSLCRLDir:               "sslcrldir",
+	Service:                 "service",
+	ConnectTimeout:          "connect_timeout",
+	LoadBalanceHosts:        "load_balance_hosts",
+}
+
+// RuntimeParams specifies runtime params.
+// Source: https://www.postgresql.org/docs/17/runtime-config-client.html
+var RuntimeParams = runtimeParams{
+	TimeZone:       "TimeZone",
+	ClientEncoding: "client_encoding",
+}
+
+type connParams struct {
 	// Host specifies name of host to connect to.
 	Host string
 
@@ -48,7 +91,7 @@ var ConnParams = struct {
 	Replication string
 
 	// Controls the number of milliseconds that transmitted data may remain unacknowledged before a connection is forcibly closed.
-	TcpUserTimeout string
+	TCPUserTimeout string
 
 	// This option controls the client's use of channel binding.
 	ChannelBinding string
@@ -99,44 +142,57 @@ var ConnParams = struct {
 
 	// Controls the order in which the client tries to connect to the available hosts and addresses.
 	LoadBalanceHosts string
-}{
-	Host:                    "host",
-	Port:                    "port",
-	Hostaddr:                "hostaddr",
-	DBName:                  "dbname",
-	User:                    "user",
-	Passfile:                "passfile",
-	ChannelBinding:          "channel_binding",
-	RequireAuth:             "require_auth",
-	Keepalives:              "keepalives",
-	KeepalivesIdle:          "keepalives_idle",
-	KeepalivesInterval:      "keepalives_interval",
-	KeepalivesCount:         "keepalives_count",
-	Replication:             "replication",
-	Options:                 "options",
-	TcpUserTimeout:          "tcp_user_timeout",
-	ApplicationName:         "application_name",
-	FallbackApplicationName: "fallback_application_name",
-	ClientEncoding:          "client_encoding",
-	SSLMode:                 "sslmode",
-	SSLKey:                  "sslkey",
-	SSLCert:                 "sslcert",
-	SSLRootCert:             "sslrootcert",
-	SSLPassword:             "sslpassword",
-	SSLCertMode:             "sslcertmode",
-	SSLCRL:                  "sslcrl",
-	SSLCRLDir:               "sslcrldir",
-	Service:                 "service",
-	ConnectTimeout:          "connect_timeout",
-	LoadBalanceHosts:        "load_balance_hosts",
 }
 
-// RuntimeParams specifies runtime params.
-// Source: https://www.postgresql.org/docs/17/runtime-config-client.html
-var RuntimeParams = struct {
+func (p connParams) Exists(key string) bool {
+	switch key := strings.ToLower(key); key {
+	case p.Host,
+		p.Port,
+		p.Hostaddr,
+		p.DBName,
+		p.User,
+		p.Password,
+		p.Passfile,
+		p.RequireAuth,
+		p.Options,
+		p.Keepalives,
+		p.KeepalivesIdle,
+		p.KeepalivesInterval,
+		p.KeepalivesCount,
+		p.ChannelBinding,
+		p.Replication,
+		p.TCPUserTimeout,
+		p.ApplicationName,
+		p.FallbackApplicationName,
+		p.ClientEncoding,
+		p.SSLMode,
+		p.SSLKey,
+		p.SSLCert,
+		p.SSLRootCert,
+		p.SSLPassword,
+		p.SSLCertMode,
+		p.SSLCRL,
+		p.SSLCRLDir,
+		p.Service,
+		p.ConnectTimeout,
+		p.LoadBalanceHosts:
+		return true
+	default:
+		return false
+	}
+}
+
+type runtimeParams struct {
 	TimeZone       string
 	ClientEncoding string
-}{
-	TimeZone:       "TimeZone",
-	ClientEncoding: "client_encoding",
+}
+
+func (p runtimeParams) Exists(key string) bool {
+	switch key := strings.ToLower(key); key {
+	case p.TimeZone,
+		p.ClientEncoding:
+		return true
+	default:
+		return false
+	}
 }

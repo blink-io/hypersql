@@ -8,7 +8,6 @@ import (
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xo/dburl"
 )
 
 func TestOptions_1(t *testing.T) {
@@ -26,20 +25,27 @@ func TestOptions_Validate(t *testing.T) {
 }
 
 func TestParseURL_1(t *testing.T) {
-	urlstr := "postgresql://user:pass@localhost/mydatabase/?sslmode=disable"
-	c, err := ParseURL(urlstr)
-	require.NoError(t, err)
-	require.NotNil(t, c)
 
-	du, err := dburl.Parse(urlstr)
-	require.NoError(t, err)
-	require.NotNil(t, du)
+	t.Run("MySQL URL", func(t *testing.T) {
 
-	fmt.Println("EscapedPath: ", du.EscapedPath())
+	})
 
-	litter.Dump(du)
+	t.Run("Postgres URL", func(t *testing.T) {
+		urlstr := "postgresql://user:pass@localhost:5432/mydatabase?sslmode=disable&TimeZone=Asia/Shanghai"
 
-	fmt.Println()
+		cc, err := ParseURL(urlstr)
+		require.NoError(t, err)
 
-	litter.Dump(du.Query())
+		fmt.Println("DSN: ", cc.dsn)
+
+		pgcc, err := ToPostgresConfigFromDSN(cc.dsn)
+		require.NoError(t, err)
+		require.NotNil(t, pgcc)
+
+		litter.Dump(cc)
+	})
+
+	t.Run("dd", func(t *testing.T) {
+
+	})
 }

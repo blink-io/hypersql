@@ -85,8 +85,15 @@ func (c *Config) toMySQL() {
 	c.Port = 3306
 }
 
+func ToMySQLConfigFromDSN(dsn string) (*mysql.Config, error) {
+	cc, err := mysql.ParseDSN(dsn)
+	if err != nil {
+		return nil, err
+	}
+	return cc, nil
+}
 func ToMySQLConfig(c *Config) (*mysql.Config, error) {
-	network := c.Network
+	network := c.Transport
 	name := c.Name
 	host := c.Host
 	port := c.Port

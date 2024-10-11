@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"bytes"
 	"errors"
 	"strings"
 
@@ -102,97 +103,102 @@ type Config struct {
 	CacheSize              int
 }
 
+func writeParamPair(buf *bytes.Buffer, joiner, key string, value any) {
+	buf.WriteString(joiner)
+	buf.WriteString(key)
+	buf.WriteString("=")
+	buf.WriteString(cast.ToString(value))
+}
+
 func (c *Config) FormatDSN() string {
 	if !strings.HasPrefix(c.Name, "file:") {
 		return c.Name
 	}
 
-	var kv = func(prefix, suffix, key string, value any) string {
-		return prefix + key + "=" + cast.ToString(value) + suffix
-	}
-	joint := "&"
-	var dsnBuilder strings.Builder
-	dsnBuilder.WriteString(c.Name)
-	dsnBuilder.WriteString("?")
-	dsnBuilder.WriteString(kv("", "", params.QueryOnly, c.QueryOnly))
-	dsnBuilder.WriteString(kv("", "", params.Immutable, c.Immutable))
+	joiner := "&"
+	var buf bytes.Buffer
+	buf.WriteString(c.Name)
+	buf.WriteString("?")
+	writeParamPair(&buf, "", params.ConnParams.Immutable, c.Immutable)
 
+	if c.QueryOnly {
+		writeParamPair(&buf, joiner, params.ConnParams.QueryOnly, c.QueryOnly)
+	}
 	if c.Auth {
-		dsnBuilder.WriteString("&_auth=")
+		buf.WriteString("&_auth=")
 		if len(c.AuthUser) > 0 {
-			dsnBuilder.WriteString(kv(joint, "", params.AuthUser, c.AuthUser))
+			writeParamPair(&buf, joiner, params.ConnParams.AuthUser, c.AuthUser)
 		}
 		if len(c.AuthPass) > 0 {
-			dsnBuilder.WriteString(kv(joint, "", params.AuthPass, c.AuthPass))
+			writeParamPair(&buf, joiner, params.ConnParams.AuthPass, c.AuthPass)
 		}
 		if len(c.AuthCrypt) > 0 {
-			dsnBuilder.WriteString(kv(joint, "", params.AuthCrypt, c.AuthCrypt))
+			writeParamPair(&buf, joiner, params.ConnParams.AuthCrypt, c.AuthCrypt)
 		}
 		if len(c.AuthSalt) > 0 {
-			dsnBuilder.WriteString(kv(joint, "", params.AuthSalt, c.AuthSalt))
+			writeParamPair(&buf, joiner, params.ConnParams.AuthSalt, c.AuthSalt)
 		}
 	}
 	if len(c.Cache) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.Cache, c.Cache))
+		writeParamPair(&buf, joiner, params.ConnParams.Cache, c.Cache)
 	}
 	if len(c.Mode) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.Mode, c.Mode))
+		writeParamPair(&buf, joiner, params.ConnParams.Mode, c.Mode)
 	}
 	if len(c.Mutex) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.Mutex, c.Mutex))
+		writeParamPair(&buf, joiner, params.ConnParams.Mutex, c.Mutex)
 	}
 	if c.BusyTimeout > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.BusyTimeout, c.BusyTimeout))
+		writeParamPair(&buf, joiner, params.ConnParams.BusyTimeout, c.BusyTimeout)
 	}
 	if len(c.AutoVacuum) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.AutoVacuum, c.AutoVacuum))
+		writeParamPair(&buf, joiner, params.ConnParams.AutoVacuum, c.AutoVacuum)
 	}
 	if len(c.JournalMode) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.JournalMode, c.JournalMode))
+		writeParamPair(&buf, joiner, params.ConnParams.JournalMode, c.JournalMode)
 	}
 	if len(c.LockingMode) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.LockingMode, c.LockingMode))
+		writeParamPair(&buf, joiner, params.ConnParams.LockingMode, c.LockingMode)
 	}
 	if len(c.SecureDelete) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.SecureDelete, c.SecureDelete))
+		writeParamPair(&buf, joiner, params.ConnParams.SecureDelete, c.SecureDelete)
 	}
 	if len(c.Loc) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.Loc, c.Loc))
+		writeParamPair(&buf, joiner, params.ConnParams.Loc, c.Loc)
 	}
 	if len(c.Sync) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.Sync, c.Sync))
+		writeParamPair(&buf, joiner, params.ConnParams.Sync, c.Sync)
 	}
 	if len(c.TxLock) > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.TxLock, c.TxLock))
+		writeParamPair(&buf, joiner, params.ConnParams.TxLock, c.TxLock)
 	}
 	if c.CacheSize > 0 {
-		dsnBuilder.WriteString(kv(joint, "", params.CacheSize, c.CacheSize))
+		writeParamPair(&buf, joiner, params.ConnParams.CacheSize, c.CacheSize)
 	}
 
 	// Append other params when it is true
 	if c.CaseSensitiveLike {
-		dsnBuilder.WriteString(kv(joint, "", params.CaseSensitiveLike, c.CaseSensitiveLike))
+		writeParamPair(&buf, joiner, params.ConnParams.CaseSensitiveLike, c.CaseSensitiveLike)
 	}
 	if c.ForeignKeys {
-		dsnBuilder.WriteString(kv(joint, "", params.ForeignKeys, c.ForeignKeys))
+		writeParamPair(&buf, joiner, params.ConnParams.ForeignKeys, c.ForeignKeys)
 	}
 	if c.IgnoreCheckConstraints {
-		dsnBuilder.WriteString(kv(joint, "", params.IgnoreCheckConstraints, c.IgnoreCheckConstraints))
+		writeParamPair(&buf, joiner, params.ConnParams.IgnoreCheckConstraints, c.IgnoreCheckConstraints)
 
 	}
 	if c.DeferForeignKeys {
-		dsnBuilder.WriteString(kv(joint, "", params.DeferForeignKeys, c.DeferForeignKeys))
+		writeParamPair(&buf, joiner, params.ConnParams.DeferForeignKeys, c.DeferForeignKeys)
 
 	}
 	if c.RecursiveTriggers {
-		dsnBuilder.WriteString(kv(joint, "", params.RecursiveTriggers, c.RecursiveTriggers))
-
+		writeParamPair(&buf, joiner, params.ConnParams.RecursiveTriggers, c.RecursiveTriggers)
 	}
 	if c.WritableSchema {
-		dsnBuilder.WriteString(kv(joint, "", params.WritableSchema, c.WritableSchema))
+		writeParamPair(&buf, joiner, params.ConnParams.WritableSchema, c.WritableSchema)
 	}
 
-	return dsnBuilder.String()
+	return buf.String()
 }
 
 func IsTrue(v any) bool {

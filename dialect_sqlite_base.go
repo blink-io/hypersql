@@ -28,6 +28,12 @@ func (c *Config) ToSQLite() {
 	c.Dialect = DialectSQLite
 }
 
+// TODO
+func ToSQLiteConfigFromDSN(dsn string) (*sqlite.Config, error) {
+	cc := &sqlite.Config{}
+	return cc, nil
+}
+
 func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 	params := c.Params
 
@@ -64,15 +70,15 @@ func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 
 	// Check duplicate params
 	dupParams := [][]string{
-		{sqliteparams.AutoVacuum, sqliteparams.Vacuum},
-		{sqliteparams.DeferForeignKeys, sqliteparams.DeferFK},
-		{sqliteparams.CaseSensitiveLike, sqliteparams.CSLike},
-		{sqliteparams.ForeignKeys, sqliteparams.FK},
-		{sqliteparams.BusyTimeout, sqliteparams.Timeout},
-		{sqliteparams.JournalMode, sqliteparams.Journal},
-		{sqliteparams.LockingMode, sqliteparams.Locking},
-		{sqliteparams.RecursiveTriggers, sqliteparams.RT},
-		{sqliteparams.Synchronous, sqliteparams.Sync},
+		{sqliteparams.ConnParams.AutoVacuum, sqliteparams.ConnParams.Vacuum},
+		{sqliteparams.ConnParams.DeferForeignKeys, sqliteparams.ConnParams.DeferFK},
+		{sqliteparams.ConnParams.CaseSensitiveLike, sqliteparams.ConnParams.CSLike},
+		{sqliteparams.ConnParams.ForeignKeys, sqliteparams.ConnParams.FK},
+		{sqliteparams.ConnParams.BusyTimeout, sqliteparams.ConnParams.Timeout},
+		{sqliteparams.ConnParams.JournalMode, sqliteparams.ConnParams.Journal},
+		{sqliteparams.ConnParams.LockingMode, sqliteparams.ConnParams.Locking},
+		{sqliteparams.ConnParams.RecursiveTriggers, sqliteparams.ConnParams.RT},
+		{sqliteparams.ConnParams.Synchronous, sqliteparams.ConnParams.Sync},
 	}
 	for _, dps := range dupParams {
 		if err := sqlite.CheckDupParam(params, dps...); err != nil {
@@ -81,73 +87,73 @@ func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 	}
 
 	// Authentication
-	auth = params.Exists(sqliteparams.Auth)
+	auth = params.Exists(sqliteparams.ConnParams.Auth)
 
-	params.IfNotEmpty(sqliteparams.AuthUser, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.AuthUser, func(val string) {
 		authUser = val
 	})
 
-	params.IfNotEmpty(sqliteparams.AuthPass, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.AuthPass, func(val string) {
 		authPass = val
 	})
 
-	params.IfNotEmpty(sqliteparams.AuthCrypt, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.AuthCrypt, func(val string) {
 		authCrypt = val
 	})
 
-	params.IfNotEmpty(sqliteparams.AuthSalt, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.AuthSalt, func(val string) {
 		authSalt = val
 	})
 
-	params.IfNotEmpty(sqliteparams.Loc, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.Loc, func(val string) {
 		loc = strings.ToLower(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.DeferForeignKeys, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.DeferForeignKeys, func(val string) {
 		deferForeignKeys = sqlite.IsTrue(val)
 	})
-	params.IfNotEmpty(sqliteparams.DeferFK, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.DeferFK, func(val string) {
 		deferForeignKeys = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.ForeignKeys, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.ForeignKeys, func(val string) {
 		foreignKeys = sqlite.IsTrue(val)
 	})
-	params.IfNotEmpty(sqliteparams.FK, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.FK, func(val string) {
 		foreignKeys = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.Immutable, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.Immutable, func(val string) {
 		immutable = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.QueryOnly, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.QueryOnly, func(val string) {
 		queryOnly = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.RecursiveTriggers, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.RecursiveTriggers, func(val string) {
 		recursiveTriggers = sqlite.IsTrue(val)
 	})
-	params.IfNotEmpty(sqliteparams.RT, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.RT, func(val string) {
 		recursiveTriggers = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.CaseSensitiveLike, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.CaseSensitiveLike, func(val string) {
 		caseSensitiveLike = sqlite.IsTrue(val)
 	})
-	params.IfNotEmpty(sqliteparams.CSLike, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.CSLike, func(val string) {
 		caseSensitiveLike = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.IgnoreCheckConstraints, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.IgnoreCheckConstraints, func(val string) {
 		ignoreCheckConstraints = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.WritableSchema, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.WritableSchema, func(val string) {
 		writableSchema = sqlite.IsTrue(val)
 	})
 
-	params.IfNotEmpty(sqliteparams.CacheSize, func(val string) {
+	params.IfNotEmpty(sqliteparams.ConnParams.CacheSize, func(val string) {
 		cs := cast.ToInt(val)
 		if cs > 0 {
 			cacheSize = cs
@@ -218,7 +224,7 @@ func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 	}
 
 	paramHandlers := map[string]func(string) error{
-		sqliteparams.Mode: func(val string) error {
+		sqliteparams.ConnParams.Mode: func(val string) error {
 			switch val = strings.ToLower(val); val {
 			case sqlite.ModeRO,
 				sqlite.ModeRW,
@@ -230,7 +236,7 @@ func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 				return fmt.Errorf("invalid mode: %v", val)
 			}
 		},
-		sqliteparams.Cache: func(val string) error {
+		sqliteparams.ConnParams.Cache: func(val string) error {
 			switch val = strings.ToLower(val); val {
 			case sqlite.CacheShared, sqlite.CachePrivate:
 				cache = val
@@ -239,7 +245,7 @@ func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 				return fmt.Errorf("invalid cache: %v", val)
 			}
 		},
-		sqliteparams.Mutex: func(val string) error {
+		sqliteparams.ConnParams.Mutex: func(val string) error {
 			switch val = strings.ToLower(val); val {
 			case sqlite.MutexNo, sqlite.MutexFull:
 				mutex = val
@@ -248,7 +254,7 @@ func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 				return fmt.Errorf("invalid _mutex: %v", val)
 			}
 		},
-		sqliteparams.TxLock: func(val string) error {
+		sqliteparams.ConnParams.TxLock: func(val string) error {
 			switch val = strings.ToLower(val); val {
 			case sqlite.TxLockExclusive,
 				sqlite.TxLockDeferred,
@@ -259,13 +265,13 @@ func ToSQLiteConfig(c *Config) (*sqlite.Config, error) {
 				return fmt.Errorf("invalid _txlock: %v", val)
 			}
 		},
-		sqliteparams.Synchronous:  syncHandler,
-		sqliteparams.Sync:         syncHandler,
-		sqliteparams.AutoVacuum:   autoVacuumHandler,
-		sqliteparams.Vacuum:       autoVacuumHandler,
-		sqliteparams.JournalMode:  journalHandler,
-		sqliteparams.Journal:      journalHandler,
-		sqliteparams.SecureDelete: secureDeleteHandler,
+		sqliteparams.ConnParams.Synchronous:  syncHandler,
+		sqliteparams.ConnParams.Sync:         syncHandler,
+		sqliteparams.ConnParams.AutoVacuum:   autoVacuumHandler,
+		sqliteparams.ConnParams.Vacuum:       autoVacuumHandler,
+		sqliteparams.ConnParams.JournalMode:  journalHandler,
+		sqliteparams.ConnParams.Journal:      journalHandler,
+		sqliteparams.ConnParams.SecureDelete: secureDeleteHandler,
 	}
 	for k, v := range paramHandlers {
 		if err := params.IfNotEmptyWithError(k, v); err != nil {
