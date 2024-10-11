@@ -26,6 +26,14 @@ func (p ConfigParams) IfExists(key string, then func(value string)) {
 	}
 }
 
+// IfNotExists represents the given function will be executed if the key exists.
+func (p ConfigParams) IfNotExists(key string, then func()) {
+	_, ok := p[key]
+	if !ok {
+		then()
+	}
+}
+
 // IfNotEmpty represents the given function will be executed if the key exists and the value is not empty.
 func (p ConfigParams) IfNotEmpty(key string, then func(value string)) {
 	v, ok := p[key]
