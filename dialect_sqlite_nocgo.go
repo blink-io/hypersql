@@ -21,6 +21,6 @@ func (c *SQLiteExtra) Validate(ctx context.Context) error {
 	return nil
 }
 
-func getRawSQLiteDriver() driver.Driver {
+func RawSQLiteDriver() driver.Driver {
 	return &sqlite3.Driver{}
 }

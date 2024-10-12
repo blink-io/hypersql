@@ -27,7 +27,23 @@ var (
 	connectors = make(map[string]ConnectorFunc)
 
 	dialecters = make(map[string]func(string) bool)
+
+	dsners = make(map[string]Dsner)
 )
+
+func RegisterConnector(dialect string, connector ConnectorFunc) {
+	if _, ok := connectors[dialect]; ok {
+		panic("hypersql: connector already registered")
+	}
+	connectors[dialect] = connector
+}
+
+func RegisterDialectChecker(dialect string, checker func(string) bool) {
+	if _, ok := dialecters[dialect]; ok {
+		panic("hypersql: dialect checker already registered")
+	}
+	dialecters[dialect] = checker
+}
 
 func GetConnector(dialect string) ConnectorFunc {
 	return connectors[dialect]

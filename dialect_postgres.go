@@ -2,21 +2,24 @@ package hypersql
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql/driver"
+	"errors"
+	"sort"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/multitracer"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/spf13/cast"
 )
 
 func init() {
 	dialect := DialectPostgres
-	//drivers[dn] = GetPostgresDriver
-	//dsners[dn] = GetPostgresDSN
 	connectors[dialect] = GetPostgresConnector
-
 	dialecters[dialect] = IsCompatiblePostgresDialect
+	dsners[dialect] = ToPostgresDSN
 }
 
 var compatiblePostgresDialects = []string{
@@ -55,7 +58,7 @@ func (c *PostgresExtra) Validate(ctx context.Context) error {
 
 func GetPostgresDriver(dialect string) (driver.Driver, error) {
 	if IsCompatiblePostgresDialect(dialect) {
-		return getRawPostgresDriver(), nil
+		return RawPostgresDriver(), nil
 	}
 	return nil, ErrUnsupportedDriver
 }
@@ -64,14 +67,7 @@ func GetPostgresDSN(dialect string) (Dsner, error) {
 	if !IsCompatiblePostgresDialect(dialect) {
 		return nil, ErrUnsupportedDialect
 	}
-	return func(ctx context.Context, c *Config) (string, error) {
-		cc, err := ToPostgresConfig(c)
-		if err != nil {
-			return "", err
-		}
-		dsn := stdlib.RegisterConnConfig(cc)
-		return dsn, nil
-	}, nil
+	return ToPostgresDSN, nil
 }
 
 func GetPostgresConnector(ctx context.Context, c *Config) (driver.Connector, error) {
@@ -79,9 +75,9 @@ func GetPostgresConnector(ctx context.Context, c *Config) (driver.Connector, err
 	if err != nil {
 		return nil, err
 	}
-	c.dsn = stdlib.RegisterConnConfig(cc)
-	drv := wrapDriver(getRawPostgresDriver(), c.DriverWrappers, c.DriverHooks)
-	return &dsnConnector{dsn: c.dsn, driver: drv}, nil
+	dsn := stdlib.RegisterConnConfig(cc)
+	drv := wrapDriver(RawPostgresDriver(), c.DriverWrappers, c.DriverHooks)
+	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }
 
 func (c *Config) ToPostgres() {
@@ -100,14 +96,48 @@ func ToPostgresConfigFromDSN(dsn string) (*pgx.ConnConfig, error) {
 	return cc, err
 }
 
+func ToPostgresConfigFromURL(url string) (*pgx.ConnConfig, error) {
+	cc, err := pgx.ParseConfig(url)
+	if err != nil {
+		return nil, err
+	}
+	return cc, err
+}
+
+// ToPostgresDSN converts the config to PostgreSQL DSN string.
+// See https://github.com/lib/pq/blob/v1.10.9/url.go#L32
+func ToPostgresDSN(ctx context.Context, c *Config) (string, error) {
+	var kvs []string
+	escaper := strings.NewReplacer(`'`, `\'`, `\`, `\\`)
+	accrue := func(k, v string) {
+		if v != "" {
+			kvs = append(kvs, k+"='"+escaper.Replace(v)+"'")
+		}
+	}
+
+	accrue("user", c.User)
+	accrue("password", c.Password)
+	accrue("host", c.Host)
+	accrue("port", cast.ToString(c.Port))
+	accrue("dbname", c.Name)
+
+	q := c.Params
+	for k, v := range q {
+		accrue(k, v)
+	}
+
+	sort.Strings(kvs) // Makes testing easier (not a performance concern)
+	return strings.Join(kvs, " "), nil
+}
+
 func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
+	var tlsConfig *tls.Config
 	name := c.Name
 	host := c.Host
 	port := c.Port
 	user := c.User
 	password := c.Password
 	dialTimeout := c.DialTimeout
-	tlsConfig := c.TLSConfig
 	params := c.Params
 	if params == nil {
 		params = make(map[string]string)
@@ -118,13 +148,29 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 		return nil, err
 	}
 
+	if c.TLSConfig != nil {
+		tlsConfig = c.TLSConfig
+	} else if c.TLSCert != nil {
+		tlscnf, err := CreateClientTLSConfig(
+			c.TLSCert.CAFile,
+			c.TLSCert.CAOptional,
+			c.TLSCert.CertFile,
+			c.TLSCert.KeyFile,
+			c.TLSCert.InsecureSkipVerify,
+		)
+		if err != nil {
+			return nil, errors.New("invalid ca file or key file")
+		}
+		tlsConfig = tlscnf
+	}
+
 	pgcc.Database = name
 	pgcc.Host = host
 	pgcc.Port = uint16(port)
 	pgcc.User = user
 	pgcc.Password = password
-	pgcc.TLSConfig = tlsConfig
 	pgcc.RuntimeParams = handlePostgresParams(params)
+	pgcc.TLSConfig = tlsConfig
 	if dialTimeout > 0 {
 		pgcc.ConnectTimeout = dialTimeout
 	}
@@ -150,7 +196,7 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	return cc, nil
 }
 
-func getRawPostgresDriver() driver.Driver {
+func RawPostgresDriver() driver.Driver {
 	// Notes: Unable to invoke &stdlib.Driver{} directly.
 	// Because the "configs" field inside the driver is not initialized.
 	return stdlib.GetDefaultDriver()

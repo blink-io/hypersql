@@ -41,11 +41,3 @@ func (p ConfigParams) IfNotEmpty(key string, then func(value string)) {
 		then(v)
 	}
 }
-
-func (p ConfigParams) IfNotEmptyWithError(key string, then func(value string) error) error {
-	v, ok := p[key]
-	if ok && len(v) > 0 {
-		return then(v)
-	}
-	return nil
-}

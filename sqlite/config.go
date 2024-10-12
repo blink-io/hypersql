@@ -3,9 +3,12 @@ package sqlite
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"net/url"
+	"slices"
 	"strings"
 
-	"github.com/blink-io/hypersql/sqlite/params"
+	sqliteparams "github.com/blink-io/hypersql/sqlite/params"
 	"github.com/spf13/cast"
 )
 
@@ -69,7 +72,7 @@ const (
 )
 
 var (
-	ErrDuplicateParam = errors.New("duplicate param")
+	ErrSynonymousParam = errors.New("sqlite: synonymous param")
 )
 
 // Config is the string for the SQLite database.
@@ -103,102 +106,465 @@ type Config struct {
 	CacheSize              int
 }
 
-func writeParamPair(buf *bytes.Buffer, joiner, key string, value any) {
-	buf.WriteString(joiner)
-	buf.WriteString(key)
-	buf.WriteString("=")
-	buf.WriteString(cast.ToString(value))
+func (c *Config) FormatDSN() string {
+	return FormatDSN(c)
 }
 
-func (c *Config) FormatDSN() string {
-	if !strings.HasPrefix(c.Name, "file:") {
-		return c.Name
+func FormatDSN(c *Config) string {
+	var buf bytes.Buffer
+	var isFirst = true
+	var accrue = func(key string, value any) {
+		if isFirst {
+			buf.WriteString("?")
+			isFirst = false
+		} else {
+			buf.WriteString("&")
+		}
+		buf.WriteString(key)
+		buf.WriteString("=")
+		buf.WriteString(cast.ToString(value))
 	}
 
-	joiner := "&"
-	var buf bytes.Buffer
 	buf.WriteString(c.Name)
-	buf.WriteString("?")
-	writeParamPair(&buf, "", params.ConnParams.Immutable, c.Immutable)
 
+	if c.Immutable {
+		accrue(sqliteparams.ConnParams.Immutable, c.Immutable)
+	}
 	if c.QueryOnly {
-		writeParamPair(&buf, joiner, params.ConnParams.QueryOnly, c.QueryOnly)
+		accrue(sqliteparams.ConnParams.QueryOnly, c.QueryOnly)
 	}
 	if c.Auth {
-		buf.WriteString("&_auth=")
-		if len(c.AuthUser) > 0 {
-			writeParamPair(&buf, joiner, params.ConnParams.AuthUser, c.AuthUser)
-		}
-		if len(c.AuthPass) > 0 {
-			writeParamPair(&buf, joiner, params.ConnParams.AuthPass, c.AuthPass)
-		}
-		if len(c.AuthCrypt) > 0 {
-			writeParamPair(&buf, joiner, params.ConnParams.AuthCrypt, c.AuthCrypt)
-		}
-		if len(c.AuthSalt) > 0 {
-			writeParamPair(&buf, joiner, params.ConnParams.AuthSalt, c.AuthSalt)
-		}
+		accrue(sqliteparams.ConnParams.Auth, "")
+	}
+	if len(c.AuthUser) > 0 {
+		accrue(sqliteparams.ConnParams.AuthUser, c.AuthUser)
+	}
+	if len(c.AuthPass) > 0 {
+		accrue(sqliteparams.ConnParams.AuthPass, c.AuthPass)
+	}
+	if len(c.AuthCrypt) > 0 {
+		accrue(sqliteparams.ConnParams.AuthCrypt, c.AuthCrypt)
+	}
+	if len(c.AuthSalt) > 0 {
+		accrue(sqliteparams.ConnParams.AuthSalt, c.AuthSalt)
 	}
 	if len(c.Cache) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.Cache, c.Cache)
+		accrue(sqliteparams.ConnParams.Cache, c.Cache)
 	}
 	if len(c.Mode) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.Mode, c.Mode)
+		accrue(sqliteparams.ConnParams.Mode, c.Mode)
 	}
 	if len(c.Mutex) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.Mutex, c.Mutex)
+		accrue(sqliteparams.ConnParams.Mutex, c.Mutex)
 	}
 	if c.BusyTimeout > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.BusyTimeout, c.BusyTimeout)
+		accrue(sqliteparams.ConnParams.BusyTimeout, c.BusyTimeout)
 	}
 	if len(c.AutoVacuum) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.AutoVacuum, c.AutoVacuum)
+		accrue(sqliteparams.ConnParams.AutoVacuum, c.AutoVacuum)
 	}
 	if len(c.JournalMode) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.JournalMode, c.JournalMode)
+		accrue(sqliteparams.ConnParams.JournalMode, c.JournalMode)
 	}
 	if len(c.LockingMode) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.LockingMode, c.LockingMode)
+		accrue(sqliteparams.ConnParams.LockingMode, c.LockingMode)
 	}
 	if len(c.SecureDelete) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.SecureDelete, c.SecureDelete)
+		accrue(sqliteparams.ConnParams.SecureDelete, c.SecureDelete)
 	}
 	if len(c.Loc) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.Loc, c.Loc)
+		accrue(sqliteparams.ConnParams.Loc, c.Loc)
 	}
 	if len(c.Sync) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.Sync, c.Sync)
+		accrue(sqliteparams.ConnParams.Sync, c.Sync)
 	}
 	if len(c.TxLock) > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.TxLock, c.TxLock)
+		accrue(sqliteparams.ConnParams.TxLock, c.TxLock)
 	}
 	if c.CacheSize > 0 {
-		writeParamPair(&buf, joiner, params.ConnParams.CacheSize, c.CacheSize)
+		accrue(sqliteparams.ConnParams.CacheSize, c.CacheSize)
 	}
 
 	// Append other params when it is true
 	if c.CaseSensitiveLike {
-		writeParamPair(&buf, joiner, params.ConnParams.CaseSensitiveLike, c.CaseSensitiveLike)
+		accrue(sqliteparams.ConnParams.CaseSensitiveLike, c.CaseSensitiveLike)
 	}
 	if c.ForeignKeys {
-		writeParamPair(&buf, joiner, params.ConnParams.ForeignKeys, c.ForeignKeys)
+		accrue(sqliteparams.ConnParams.ForeignKeys, c.ForeignKeys)
 	}
 	if c.IgnoreCheckConstraints {
-		writeParamPair(&buf, joiner, params.ConnParams.IgnoreCheckConstraints, c.IgnoreCheckConstraints)
+		accrue(sqliteparams.ConnParams.IgnoreCheckConstraints, c.IgnoreCheckConstraints)
 
 	}
 	if c.DeferForeignKeys {
-		writeParamPair(&buf, joiner, params.ConnParams.DeferForeignKeys, c.DeferForeignKeys)
+		accrue(sqliteparams.ConnParams.DeferForeignKeys, c.DeferForeignKeys)
 
 	}
 	if c.RecursiveTriggers {
-		writeParamPair(&buf, joiner, params.ConnParams.RecursiveTriggers, c.RecursiveTriggers)
+		accrue(sqliteparams.ConnParams.RecursiveTriggers, c.RecursiveTriggers)
 	}
 	if c.WritableSchema {
-		writeParamPair(&buf, joiner, params.ConnParams.WritableSchema, c.WritableSchema)
+		accrue(sqliteparams.ConnParams.WritableSchema, c.WritableSchema)
 	}
 
 	return buf.String()
+}
+
+func ParseDSN(dsn string) (*Config, error) {
+	pos := strings.IndexRune(dsn, '?')
+
+	var name string
+	params := make(map[string]string)
+	if pos >= 1 {
+		if query, err := url.ParseQuery(dsn[pos+1:]); err != nil {
+			return nil, err
+		} else {
+			for k := range query {
+				params[k] = query.Get(k)
+			}
+		}
+
+		name = dsn[:pos]
+	}
+
+	cc := &Config{
+		Name: name,
+	}
+
+	if pos == 0 {
+		return cc, nil
+	}
+
+	if err := cc.HandleParams(params); err != nil {
+		return nil, err
+	}
+
+	return cc, nil
+}
+
+func (c *Config) HandleParams(params map[string]string) error {
+	if c == nil || len(params) == 0 {
+		return nil
+	}
+
+	// Options
+	//var loc *time.Location
+	auth := false
+	authUser := ""
+	authPass := ""
+	authCrypt := ""
+	authSalt := ""
+
+	mutex := ""
+	txlock := ""
+	mode := ""
+
+	// PRAGMA's
+	autoVacuum := ""
+	busyTimeout := 5000
+	cache := ""
+	caseSensitiveLike := false
+	deferForeignKeys := false
+	foreignKeys := false
+	ignoreCheckConstraints := false
+	journalMode := ""
+	immutable := false
+	lockingMode := ""
+	queryOnly := false
+	recursiveTriggers := false
+	secureDelete := ""
+	sync := ""
+	writableSchema := false
+	loc := ""
+	cacheSize := 2000
+
+	// Check duplicate params
+	synonParams := [][]string{
+		{sqliteparams.ConnParams.AutoVacuum, sqliteparams.ConnParams.Vacuum},
+		{sqliteparams.ConnParams.DeferForeignKeys, sqliteparams.ConnParams.DeferFK},
+		{sqliteparams.ConnParams.CaseSensitiveLike, sqliteparams.ConnParams.CSLike},
+		{sqliteparams.ConnParams.ForeignKeys, sqliteparams.ConnParams.FK},
+		{sqliteparams.ConnParams.BusyTimeout, sqliteparams.ConnParams.Timeout},
+		{sqliteparams.ConnParams.JournalMode, sqliteparams.ConnParams.Journal},
+		{sqliteparams.ConnParams.LockingMode, sqliteparams.ConnParams.Locking},
+		{sqliteparams.ConnParams.RecursiveTriggers, sqliteparams.ConnParams.RT},
+		{sqliteparams.ConnParams.Synchronous, sqliteparams.ConnParams.Sync},
+	}
+	for _, ss := range synonParams {
+		if err := ifSynonym(params, func(keys ...string) error {
+			return ErrSynonymousParam
+		}, ss...); err != nil {
+			return err
+		}
+	}
+
+	var ifNotEmpty = func(key string, then func(value string)) {
+		if val, ok := params[key]; ok && len(val) > 0 {
+			then(val)
+		}
+	}
+
+	// Authentication
+	if _, ok := params[sqliteparams.ConnParams.Auth]; ok {
+		auth = true
+	}
+
+	ifNotEmpty(sqliteparams.ConnParams.AuthUser, func(val string) {
+		authUser = val
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.AuthPass, func(val string) {
+		authPass = val
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.AuthCrypt, func(val string) {
+		authCrypt = val
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.AuthSalt, func(val string) {
+		authSalt = val
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.BusyTimeout, func(val string) {
+		bt := cast.ToInt(val)
+		if bt > 0 {
+			busyTimeout = bt
+		}
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.Loc, func(val string) {
+		loc = strings.ToLower(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.DeferForeignKeys, func(val string) {
+		deferForeignKeys = IsTrue(val)
+	})
+	ifNotEmpty(sqliteparams.ConnParams.DeferFK, func(val string) {
+		deferForeignKeys = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.ForeignKeys, func(val string) {
+		foreignKeys = IsTrue(val)
+	})
+	ifNotEmpty(sqliteparams.ConnParams.FK, func(val string) {
+		foreignKeys = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.Immutable, func(val string) {
+		immutable = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.QueryOnly, func(val string) {
+		queryOnly = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.RecursiveTriggers, func(val string) {
+		recursiveTriggers = IsTrue(val)
+	})
+	ifNotEmpty(sqliteparams.ConnParams.RT, func(val string) {
+		recursiveTriggers = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.CaseSensitiveLike, func(val string) {
+		caseSensitiveLike = IsTrue(val)
+	})
+	ifNotEmpty(sqliteparams.ConnParams.CSLike, func(val string) {
+		caseSensitiveLike = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.IgnoreCheckConstraints, func(val string) {
+		ignoreCheckConstraints = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.WritableSchema, func(val string) {
+		writableSchema = IsTrue(val)
+	})
+
+	ifNotEmpty(sqliteparams.ConnParams.CacheSize, func(val string) {
+		cs := cast.ToInt(val)
+		if cs > 0 {
+			cacheSize = cs
+		}
+	})
+
+	var validVal = func(v string, ss ...string) bool {
+		return slices.ContainsFunc(ss, func(e string) bool {
+			return strings.EqualFold(v, e)
+		})
+	}
+
+	syncHandler := func(val string) error {
+		switch {
+		case validVal(val,
+			"0", "1", "2", "3",
+			SyncFull,
+			SyncNormal,
+			SyncExtra,
+			SyncOff):
+			sync = val
+			return nil
+		default:
+			return fmt.Errorf("invalid _sync: %v", val)
+		}
+	}
+
+	autoVacuumHandler := func(val string) error {
+		switch {
+		case validVal(val,
+			"0", "1", "2",
+			AutoVacuumNone,
+			AutoVacuumIncremental,
+			AutoVacuumFull):
+			autoVacuum = val
+			return nil
+		default:
+			return fmt.Errorf("invalid _auto_vacuum: %v, expecting value of '0 NONE 1 FULL 2 INCREMENTAL'", val)
+		}
+	}
+
+	journalHandler := func(val string) error {
+		switch {
+		case validVal(val,
+			JournalDelete,
+			JournalTruncate,
+			JournalPersist,
+			JournalMemory,
+			JournalWal,
+			JournalOff):
+			journalMode = val
+			return nil
+		default:
+			return fmt.Errorf("invalid _journal_mode: %v", val)
+		}
+	}
+
+	lockingHandler := func(val string) error {
+		switch {
+		case validVal(val, LockingModeExclusive, LockingModeNormal):
+			lockingMode = val
+			return nil
+		default:
+			return fmt.Errorf("invalid _locking_mode: %v", val)
+		}
+	}
+
+	secureDeleteHandler := func(val string) error {
+		switch {
+		case validVal(val,
+			BoolTrueOn,
+			BoolTrueYes,
+			BoolTrue1,
+			BoolTrueTrue):
+			secureDelete = BoolTrueTrue
+			return nil
+		case validVal(val,
+			BoolFalseOff,
+			BoolFalse0,
+			BoolFalseFalse,
+			BoolFalseNo):
+			secureDelete = BoolFalseFalse
+			return nil
+		case validVal(val, SecureDeleteFast):
+			secureDelete = val
+			return nil
+		default:
+			return fmt.Errorf("invalid _secure_delete: %v", val)
+		}
+	}
+
+	paramHandlers := map[string]func(string) error{
+		sqliteparams.ConnParams.Mode: func(val string) error {
+			switch {
+			case validVal(val,
+				ModeRO,
+				ModeRW,
+				ModeRWC,
+				ModeMemory):
+				mode = val
+				return nil
+			default:
+				return fmt.Errorf("invalid mode: %v", val)
+			}
+		},
+		sqliteparams.ConnParams.Cache: func(val string) error {
+			switch {
+			case validVal(val, CacheShared, CachePrivate):
+				cache = val
+				return nil
+			default:
+				return fmt.Errorf("invalid cache: %v", val)
+			}
+		},
+		sqliteparams.ConnParams.Mutex: func(val string) error {
+			switch {
+			case validVal(val, MutexNo, MutexFull):
+				mutex = val
+				return nil
+			default:
+				return fmt.Errorf("invalid _mutex: %v", val)
+			}
+		},
+		sqliteparams.ConnParams.TxLock: func(val string) error {
+			switch {
+			case validVal(val,
+				TxLockExclusive,
+				TxLockDeferred,
+				TxLockImmediate):
+				txlock = val
+				return nil
+			default:
+				return fmt.Errorf("invalid _txlock: %v", val)
+			}
+		},
+		sqliteparams.ConnParams.Synchronous:  syncHandler,
+		sqliteparams.ConnParams.Sync:         syncHandler,
+		sqliteparams.ConnParams.AutoVacuum:   autoVacuumHandler,
+		sqliteparams.ConnParams.Vacuum:       autoVacuumHandler,
+		sqliteparams.ConnParams.JournalMode:  journalHandler,
+		sqliteparams.ConnParams.Journal:      journalHandler,
+		sqliteparams.ConnParams.SecureDelete: secureDeleteHandler,
+		sqliteparams.ConnParams.LockingMode:  lockingHandler,
+		sqliteparams.ConnParams.Locking:      lockingHandler,
+	}
+	var errorOnNotEmpty = func(key string, then func(value string) error) error {
+		if v, ok := params[key]; ok && len(v) > 0 {
+			return then(v)
+		}
+		return nil
+	}
+	for k, v := range paramHandlers {
+		if err := errorOnNotEmpty(k, v); err != nil {
+			return err
+		}
+	}
+
+	c.Auth = auth
+	c.AuthUser = authUser
+	c.AuthPass = authPass
+	c.AuthCrypt = authCrypt
+	c.AuthSalt = authSalt
+	c.AutoVacuum = autoVacuum
+	c.BusyTimeout = busyTimeout
+	c.Cache = cache
+	c.CaseSensitiveLike = caseSensitiveLike
+	c.DeferForeignKeys = deferForeignKeys
+	c.ForeignKeys = foreignKeys
+	c.TxLock = txlock
+	c.Mode = mode
+	c.Mutex = mutex
+	c.JournalMode = journalMode
+	c.Immutable = immutable
+	c.LockingMode = lockingMode
+	c.QueryOnly = queryOnly
+	c.IgnoreCheckConstraints = ignoreCheckConstraints
+	c.Sync = sync
+	c.RecursiveTriggers = recursiveTriggers
+	c.SecureDelete = secureDelete
+	c.Loc = loc
+	c.WritableSchema = writableSchema
+	c.CacheSize = cacheSize
+
+	return nil
 }
 
 func IsTrue(v any) bool {
@@ -217,26 +583,4 @@ func IsFalse(v any) bool {
 	default:
 		return false
 	}
-}
-
-func dupCheck(params map[string]string, keys ...string) bool {
-	if len(keys) > 1 {
-		var c = 0
-		for _, key := range keys {
-			if params[key] != "" {
-				c++
-				if c > 1 {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func CheckDupParam(params map[string]string, keys ...string) error {
-	if dupCheck(params, keys...) {
-		return ErrDuplicateParam
-	}
-	return nil
 }

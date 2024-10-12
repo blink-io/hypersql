@@ -25,8 +25,6 @@ func ParseURL(url string) (*Config, error) {
 		Host:      uu.Host,
 		Port:      cast.ToInt(uu.Port),
 		Params:    make(ConfigParams),
-		url:       url,
-		dsn:       uu.DSN,
 	}
 
 	if ui := uu.User; ui != nil {

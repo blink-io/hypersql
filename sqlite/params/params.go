@@ -1,8 +1,14 @@
 package params
 
+import (
+	"strings"
+)
+
 // ConnParams represents the supported connection parameters.
 // Source: https://github.com/mattn/go-sqlite3#connection-string
 var ConnParams = connParams{
+
+	// https://pkg.go.dev/github.com/mattn/go-sqlite3#readme-user-authentication
 	Auth: "_auth",
 
 	AuthUser: "_auth_user",
@@ -111,4 +117,48 @@ type connParams struct {
 	TxLock                 string
 	WritableSchema         string
 	CacheSize              string
+}
+
+func (p connParams) Exists(key string) bool {
+	switch key := strings.ToLower(key); key {
+	case p.Auth,
+		p.AuthUser,
+		p.AuthPass,
+		p.AuthCrypt,
+		p.AuthSalt,
+		p.AutoVacuum,
+		p.Vacuum,
+		p.BusyTimeout,
+		p.Timeout,
+		p.CaseSensitiveLike,
+		p.CSLike,
+		p.DeferForeignKeys,
+		p.DeferFK,
+		p.ForeignKeys,
+		p.FK,
+		p.IgnoreCheckConstraints,
+		p.JournalMode,
+		p.Journal,
+		p.Immutable,
+		p.Loc,
+		p.Locale,
+		p.LockingMode,
+		p.Locking,
+		p.Mode,
+		p.Cache,
+		p.Mutex,
+		p.QueryOnly,
+		p.RecursiveTriggers,
+		p.RT,
+		p.SecureDelete,
+		p.SharedCacheMode,
+		p.Synchronous,
+		p.Sync,
+		p.TxLock,
+		p.WritableSchema,
+		p.CacheSize:
+		return true
+	default:
+		return false
+	}
 }

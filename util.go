@@ -20,7 +20,3 @@ func DoPingContext(ctx context.Context, pinger Pinger) error {
 func hostPortToAddr(host string, port int) string {
 	return net.JoinHostPort(host, strconv.Itoa(port))
 }
-
-func return1OnError[T any](err error) (*T, error) {
-	return nil, err
-}

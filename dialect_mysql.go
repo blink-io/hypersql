@@ -3,6 +3,7 @@ package hypersql
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -11,6 +12,7 @@ import (
 	mysqlparams "github.com/blink-io/hypersql/mysql/params"
 	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/cast"
+	"github.com/xo/dburl"
 )
 
 var compatibleMySQLDialects = []string{
@@ -21,11 +23,9 @@ var compatibleMySQLDialects = []string{
 
 func init() {
 	dialect := DialectMySQL
-	//drivers[d] = GetMySQLDriver
-	//dsners[d] = GetMySQLDSN
 	connectors[dialect] = GetMySQLConnector
-
 	dialecters[dialect] = IsCompatibleMySQLDialect
+	dsners[dialect] = ToMySQLDSN
 }
 
 type MySQLExtra struct {
@@ -53,19 +53,12 @@ func GetMySQLDSN(dialect string) (Dsner, error) {
 	if !IsCompatibleMySQLDialect(dialect) {
 		return nil, ErrUnsupportedDialect
 	}
-	return func(ctx context.Context, c *Config) (string, error) {
-		cc, err := ToMySQLConfig(c)
-		if err != nil {
-			return "", err
-		}
-		dsn := cc.FormatDSN()
-		return dsn, nil
-	}, nil
+	return ToMySQLDSN, nil
 }
 
 func GetMySQLDriver(dialect string) (driver.Driver, error) {
 	if IsCompatibleMySQLDialect(dialect) {
-		return getRawMySQLDriver(), nil
+		return RawMySQLDriver(), nil
 	}
 	return nil, ErrUnsupportedDriver
 }
@@ -75,12 +68,12 @@ func GetMySQLConnector(ctx context.Context, c *Config) (driver.Connector, error)
 	if err != nil {
 		return nil, err
 	}
-	c.dsn = cc.FormatDSN()
-	drv := wrapDriver(getRawMySQLDriver(), c.DriverWrappers, c.DriverHooks)
-	return &dsnConnector{dsn: c.dsn, driver: drv}, nil
+	dsn := cc.FormatDSN()
+	drv := wrapDriver(RawMySQLDriver(), c.DriverWrappers, c.DriverHooks)
+	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }
 
-func (c *Config) toMySQL() {
+func (c *Config) ToMySQL() {
 	c.Dialect = DialectMySQL
 	c.Port = 3306
 }
@@ -92,6 +85,24 @@ func ToMySQLConfigFromDSN(dsn string) (*mysql.Config, error) {
 	}
 	return cc, nil
 }
+
+func ToMySQLConfigFromURL(url string) (*mysql.Config, error) {
+	uu, err := dburl.Parse(url)
+	if err != nil {
+		return nil, err
+	}
+	dsn := uu.DSN
+	return ToMySQLConfigFromDSN(dsn)
+}
+
+func ToMySQLDSN(ctx context.Context, c *Config) (string, error) {
+	cc, err := ToMySQLConfig(c)
+	if err != nil {
+		return "", err
+	}
+	return cc.FormatDSN(), nil
+}
+
 func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	network := c.Transport
 	name := c.Name
@@ -139,6 +150,20 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 		keyName := mysqlTLSKeyName(name)
 		_ = mysql.RegisterTLSConfig(keyName, tlsConfig)
 		cc.TLSConfig = keyName
+	} else if c.TLSCert != nil {
+		tlscnf, err := CreateClientTLSConfig(
+			c.TLSCert.CAFile,
+			c.TLSCert.CAOptional,
+			c.TLSCert.CertFile,
+			c.TLSCert.KeyFile,
+			c.TLSCert.InsecureSkipVerify,
+		)
+		if err != nil {
+			return nil, errors.New("invalid ca file or key file")
+		}
+		keyName := mysqlTLSKeyName(name)
+		_ = mysql.RegisterTLSConfig(keyName, tlscnf)
+		cc.TLSConfig = keyName
 	}
 	if l := c.Logger; l != nil {
 		cc.Logger = logger.Logf(func(v ...any) {
@@ -161,7 +186,7 @@ func IsCompatibleMySQLDialect(dialect string) bool {
 	return isCompatibleDialectIn(dialect, compatibleMySQLDialects)
 }
 
-func getRawMySQLDriver() driver.Driver {
+func RawMySQLDriver() driver.Driver {
 	return &mysql.MySQLDriver{}
 }
 

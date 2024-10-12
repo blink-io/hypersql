@@ -35,8 +35,10 @@ type Config struct {
 	ConnInitSQL   string         `json:"conn_init_sql" yaml:"conn_init_sql" toml:"conn_init_sql"`
 	ValidationSQL string         `json:"validation_sql" yaml:"validation_sql" toml:"validation_sql"`
 	Loc           *time.Location `json:"loc" yaml:"loc" toml:"loc"`
-	TLSConfig     *tls.Config    `json:"-" yaml:"-" toml:"-"`
 	Logger        Logger         `json:"-" yaml:"-" toml:"-"`
+
+	TLSCert   *TLSCert    `json:"tls_cert" yaml:"tls_cert" toml:"tls_cert"`
+	TLSConfig *tls.Config `json:"-" yaml:"-" toml:"-"`
 
 	// Driver related
 	DriverHooks    DriverHooks
@@ -55,12 +57,6 @@ type Config struct {
 
 	// Database extra config
 	Extra any
-
-	// dsn for internal use
-	dsn string
-
-	// url for internal use
-	url string
 }
 
 func SetupConfig(c *Config) *Config {
@@ -101,12 +97,4 @@ func (c *Config) Validate(ctx context.Context) error {
 
 func (c *Config) DBInfo() DBInfo {
 	return NewDBInfo(c)
-}
-
-func (c *Config) DSN() string {
-	return c.dsn
-}
-
-func (c *Config) URL() string {
-	return c.url
 }
