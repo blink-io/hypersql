@@ -77,6 +77,7 @@ var (
 
 // Config is the string for the SQLite database.
 // See https://pkg.go.dev/github.com/mattn/go-sqlite3#readme-connection-string
+// See https://pkg.go.dev/github.com/mattn/go-sqlite3#SQLiteDriver
 type Config struct {
 	Name                   string
 	Auth                   bool
