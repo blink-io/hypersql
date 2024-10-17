@@ -76,7 +76,7 @@ func GetPostgresConnector(ctx context.Context, c *Config) (driver.Connector, err
 		return nil, err
 	}
 	dsn := stdlib.RegisterConnConfig(cc)
-	drv := wrapDriver(RawPostgresDriver(), c.DriverWrappers, c.DriverHooks)
+	drv := WrapDriver(RawPostgresDriver(), c.DriverWrappers, c.DriverHooks)
 	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }
 
@@ -202,7 +202,7 @@ func RawPostgresDriver() driver.Driver {
 	return stdlib.GetDefaultDriver()
 }
 
-func handlePostgresParams(params map[string]string) map[string]string {
+func handlePostgresParams(params ConfigParams) map[string]string {
 	newParams := make(map[string]string)
 	for k, v := range params {
 		newParams[k] = v

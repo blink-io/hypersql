@@ -19,3 +19,21 @@ func (c *dsnConnector) Connect(_ context.Context) (driver.Conn, error) {
 func (c *dsnConnector) Driver() driver.Driver {
 	return c.driver
 }
+
+type wrapConnector struct {
+	c driver.Connector
+}
+
+func (w *wrapConnector) Connect(ctx context.Context) (driver.Conn, error) {
+	return w.c.Connect(ctx)
+}
+
+func (w *wrapConnector) Driver() driver.Driver {
+	return w.c.Driver()
+}
+
+var _ driver.Connector = (*wrapConnector)(nil)
+
+func WrapConnector(c driver.Connector) driver.Connector {
+	return &wrapConnector{c: c}
+}

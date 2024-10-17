@@ -73,7 +73,7 @@ func isCompatibleDialectIn(dialect string, compatibleDialects []string) bool {
 	return flag
 }
 
-func wrapDriver(drv driver.Driver, wrappers DriverWrappers, hooks DriverHooks) driver.Driver {
+func WrapDriver(drv driver.Driver, wrappers DriverWrappers, hooks DriverHooks) driver.Driver {
 	return wrapDriverHooks(wrapDriverWrappers(drv, wrappers...), hooks...)
 }
 

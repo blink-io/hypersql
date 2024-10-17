@@ -12,6 +12,7 @@ require (
 	github.com/guregu/null/v5 v5.0.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/microsoft/go-mssqldb v1.7.2
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/sanity-io/litter v1.5.5
 	github.com/spf13/cast v1.7.0
@@ -27,6 +28,8 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
+	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/google/pprof v0.0.0-20240903155634-a8630aee4ab9 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

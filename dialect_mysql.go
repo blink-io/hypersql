@@ -69,7 +69,7 @@ func GetMySQLConnector(ctx context.Context, c *Config) (driver.Connector, error)
 		return nil, err
 	}
 	dsn := cc.FormatDSN()
-	drv := wrapDriver(RawMySQLDriver(), c.DriverWrappers, c.DriverHooks)
+	drv := WrapDriver(RawMySQLDriver(), c.DriverWrappers, c.DriverHooks)
 	return &dsnConnector{dsn: dsn, driver: drv}, nil
 }
 
@@ -194,7 +194,7 @@ func mysqlTLSKeyName(name string) string {
 	return DialectMySQL + "_" + name
 }
 
-func handleMySQLParams(params map[string]string) map[string]string {
+func handleMySQLParams(params ConfigParams) map[string]string {
 	newParams := make(map[string]string)
 	for k, v := range params {
 		newParams[k] = v
