@@ -45,9 +45,9 @@ func RegisterPgxErrorHandler(code string, fn func(*pgconn.PgError) *Error) {
 	pgxErrorHandlers[code] = fn
 }
 
-// handlePgxError transforms *pgconn.PgError to *Error.
+// handlePostgresError transforms *pgconn.PgError to *Error.
 // Doc: https://www.postgresql.org/docs/11/protocol-error-fields.html.
-func handlePgxError(e *pgconn.PgError) *Error {
+func handlePostgresError(e *pgconn.PgError) *Error {
 	if errors.Is(e, pgx.ErrNoRows) {
 		return ErrNoRows.As(e.Code, e.Message, e)
 	} else if h, ok := pgxErrorHandlers[e.Code]; ok {
@@ -55,4 +55,9 @@ func handlePgxError(e *pgconn.PgError) *Error {
 	} else {
 		return ErrOther.As(e.Code, e.Message, e)
 	}
+}
+
+func isPostgresError(e error) bool {
+	_, ok := isTargetErr[*PostgresError](e)
+	return ok
 }

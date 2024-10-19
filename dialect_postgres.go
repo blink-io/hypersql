@@ -77,7 +77,7 @@ func GetPostgresConnector(ctx context.Context, c *Config) (driver.Connector, err
 	}
 	dsn := stdlib.RegisterConnConfig(cc)
 	drv := WrapDriver(RawPostgresDriver(), c.DriverWrappers, c.DriverHooks)
-	return &dsnConnector{dsn: dsn, driver: drv}, nil
+	return &dsnConnector{dsn: dsn, dri: drv}, nil
 }
 
 func (c *Config) ToPostgres() {
@@ -198,7 +198,7 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 
 func RawPostgresDriver() driver.Driver {
 	// Notes: Unable to invoke &stdlib.Driver{} directly.
-	// Because the "configs" field inside the driver is not initialized.
+	// Because the "configs" field inside the dri is not initialized.
 	return stdlib.GetDefaultDriver()
 }
 

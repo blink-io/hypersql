@@ -104,3 +104,8 @@ func handleMySQLError(e *mysql.MySQLError) *Error {
 		return ErrOther.As(cast.ToString(e.Number), e.Message, e)
 	}
 }
+
+func isMySQLError(e error) bool {
+	_, ok := isTargetErr[*MySQLError](e)
+	return ok
+}

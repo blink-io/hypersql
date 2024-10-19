@@ -1,5 +1,3 @@
-//go:build sqlite
-
 package hypersql
 
 import (
@@ -12,20 +10,21 @@ import (
 	"testing"
 
 	"github.com/XSAM/otelsql"
-	"github.com/blink-io/hypersql/sqlite"
-	sqliteparams "github.com/blink-io/hypersql/sqlite/params"
 	"github.com/qustavo/sqlhooks/v2/hooks/loghooks"
 	"github.com/stretchr/testify/assert"
-	_ "modernc.org/sqlite"
 )
 
-func TestSqlite_Driver_1(t *testing.T) {
+func TestSQLServer_Driver_1(t *testing.T) {
 	c := &Config{
-		Dialect: DialectSQLite,
-		Name:    "file:sqlite.db",
-		Params: ConfigParams{
-			sqliteparams.ConnParams.Cache: sqlite.CacheShared,
-			sqliteparams.ConnParams.Mode:  sqlite.ModeMemory,
+		Dialect:  DialectSQLServer,
+		Name:     "test",
+		User:     "sa",
+		Host:     "localhost",
+		Port:     1433,
+		Password: "Heison99188",
+		Params:   ConfigParams{
+			//sqliteparams.ConnParams.Cache: sqlite.CacheShared,
+			//sqliteparams.ConnParams.Mode:  sqlite.ModeMemory,
 		},
 		DriverHooks: DriverHooks{
 			loghooks.New(),
@@ -34,10 +33,14 @@ func TestSqlite_Driver_1(t *testing.T) {
 			func(drv driver.Driver) driver.Driver {
 				return otelsql.WrapDriver(drv)
 			},
+			func(drv driver.Driver) driver.Driver {
+				slog.Info("=======================")
+				return drv
+			},
 		},
 	}
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("sqlserver success", func(t *testing.T) {
 		c.AfterHandlers = AfterHandlers{
 			func(ctx context.Context, db *sql.DB) error {
 				return otelsql.RegisterDBStatsMetrics(db)
@@ -52,14 +55,14 @@ func TestSqlite_Driver_1(t *testing.T) {
 		assert.NoError(t, err)
 
 		var ver string
-		sql := "select sqlite_version()"
+		sql := "select @@Version"
 		row := db.QueryRow(sql)
 		assert.NoError(t, row.Scan(&ver))
 
-		fmt.Println("sqlite version: ", ver)
+		fmt.Println("sqlserver version: ", ver)
 	})
 
-	t.Run("fail", func(t *testing.T) {
+	t.Run("sqlserver fail", func(t *testing.T) {
 		c.AfterHandlers = AfterHandlers{
 			func(ctx context.Context, db *sql.DB) error {
 				return errors.New("throw an error for fail")

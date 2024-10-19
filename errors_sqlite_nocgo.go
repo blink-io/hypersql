@@ -48,3 +48,8 @@ func handleSQLiteError(e *SQLiteError) *Error {
 		return ErrOther.As(cast.ToString(e.Code()), e.Error(), e)
 	}
 }
+
+func isSQLiteError(e error) bool {
+	_, ok := isTargetErr[*SQLiteError](e)
+	return ok
+}

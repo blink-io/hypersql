@@ -25,6 +25,10 @@ const (
 	ErrNameConstraintForeignKey ErrName = "foreign_key_constraint"
 )
 
+var (
+	errHandler = make(map[error]func(error) *Error)
+)
+
 func (s ErrName) String() string {
 	return string(s)
 }
@@ -114,7 +118,7 @@ func WrapError(e error) *Error {
 	if tErr, ok := isTargetErr[*Error](e); ok {
 		newErr = tErr
 	} else if tErr, ok := isTargetErr[*PostgresError](e); ok {
-		newErr = handlePgxError(tErr)
+		newErr = handlePostgresError(tErr)
 	} else if tErr, ok := isTargetErr[*MySQLError](e); ok {
 		newErr = handleMySQLError(tErr)
 	} else if tErr, ok := isTargetErr[*SQLiteError](e); ok {

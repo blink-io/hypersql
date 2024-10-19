@@ -56,10 +56,9 @@ func GetSQLServerConnector(ctx context.Context, c *Config) (driver.Connector, er
 	if err != nil {
 		return nil, err
 	}
-	_ = mssql.NewConnectorConfig(*cc)
-	dsn := ""
+	dsn := cc.URL().String()
 	drv := WrapDriver(RawSQLServerDriver(), c.DriverWrappers, c.DriverHooks)
-	return &dsnConnector{dsn: dsn, driver: drv}, nil
+	return &dsnConnector{dsn: dsn, dri: drv}, nil
 }
 
 func (c *Config) ToSQLServer() {
@@ -76,6 +75,7 @@ func ToSQLServerConfigFromDSN(dsn string) (*msdsn.Config, error) {
 	return &cc, err
 }
 
+// ToSQLServerConfigFromURL converts the config to SQLServer URL config.
 func ToSQLServerConfigFromURL(url string) (*msdsn.Config, error) {
 	cc, err := msdsn.Parse(url)
 	if err != nil {
@@ -86,7 +86,11 @@ func ToSQLServerConfigFromURL(url string) (*msdsn.Config, error) {
 
 // ToSQLServerDSN converts the config to SQLServer DSN string.
 func ToSQLServerDSN(ctx context.Context, c *Config) (string, error) {
-	return "", nil
+	cc, err := ToSQLServerConfig(c)
+	if err != nil {
+		return "", err
+	}
+	return cc.URL().String(), nil
 }
 
 func ToSQLServerConfig(c *Config) (*msdsn.Config, error) {
@@ -99,7 +103,7 @@ func ToSQLServerConfig(c *Config) (*msdsn.Config, error) {
 	dialTimeout := c.DialTimeout
 	params := c.Params
 	if params == nil {
-		params = make(map[string]string)
+		params = make(ConfigParams)
 	}
 
 	cc := &msdsn.Config{}
@@ -146,16 +150,22 @@ func RawSQLServerDriver() driver.Driver {
 }
 
 func processSQLServerParams(params ConfigParams, c *msdsn.Config) error {
+	params.IfNotEmpty(mssqlparams.ConnParams.Database, func(v string) {
+		c.Database = v
+	})
+	params.IfNotEmpty(mssqlparams.ConnParams.AppName, func(v string) {
+		c.AppName = v
+	})
 	params.IfNotEmpty(mssqlparams.ConnParams.KeepAlive, func(v string) {
 		tt := cast.ToDuration(v)
 		if tt > 0 {
 			c.KeepAlive = tt
 		}
 	})
-	params.IfNotEmpty(mssqlparams.ConnParams.ServerSPN, func(v string) {
+	params.IfNotEmpty(mssqlparams.ConnParams.ServerSpn, func(v string) {
 		c.ServerSPN = v
 	})
-	params.IfNotEmpty(mssqlparams.ConnParams.Workstation, func(v string) {
+	params.IfNotEmpty(mssqlparams.ConnParams.WorkstationID, func(v string) {
 		c.Workstation = v
 	})
 	return nil

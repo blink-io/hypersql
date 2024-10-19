@@ -49,7 +49,7 @@ func GetSQLiteConnector(ctx context.Context, c *Config) (driver.Connector, error
 	}
 	dsn := cc.FormatDSN()
 	drv := WrapDriver(RawSQLiteDriver(), c.DriverWrappers, c.DriverHooks)
-	return &dsnConnector{dsn: dsn, driver: drv}, nil
+	return &dsnConnector{dsn: dsn, dri: drv}, nil
 }
 
 func (c *Config) ToSQLite() {
