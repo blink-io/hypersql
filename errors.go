@@ -123,6 +123,8 @@ func WrapError(e error) *Error {
 		newErr = handleMySQLError(tErr)
 	} else if tErr, ok := isTargetErr[*SQLiteError](e); ok {
 		newErr = handleSQLiteError(tErr)
+	} else if tErr, ok := isTargetErr[*SQLServerError](e); ok {
+		newErr = handleSQLServerError(tErr)
 	} else if ef, ok := handleCommonError(e); ok {
 		newErr = ef(e)
 	} else {
