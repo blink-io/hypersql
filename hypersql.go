@@ -22,7 +22,7 @@ const (
 var (
 	ErrUnsupportedDialect = errors.New("unsupported dialect")
 
-	ErrUnsupportedDriver = errors.New("unsupported dri")
+	ErrUnsupportedDriver = errors.New("unsupported drv")
 
 	InvalidConfig = errors.New("invalid config")
 )

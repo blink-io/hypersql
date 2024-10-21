@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/XSAM/otelsql"
+	mssqlparams "github.com/blink-io/hypersql/sqlserver/params"
 	"github.com/qustavo/sqlhooks/v2/hooks/loghooks"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,9 +23,10 @@ func TestSQLServer_Driver_1(t *testing.T) {
 		Host:     "localhost",
 		Port:     1433,
 		Password: "Heison99188",
-		Params:   ConfigParams{
+		Params: ConfigParams{
 			//sqliteparams.ConnParams.Cache: sqlite.CacheShared,
 			//sqliteparams.ConnParams.Mode:  sqlite.ModeMemory,
+			mssqlparams.ConnParams.Encrypt: "3",
 		},
 		DriverHooks: DriverHooks{
 			loghooks.New(),
@@ -55,7 +57,8 @@ func TestSQLServer_Driver_1(t *testing.T) {
 		assert.NoError(t, err)
 
 		var ver string
-		sql := "select @@Version"
+		//sql := "select @@Version"
+		sql := "select * from users"
 		row := db.QueryRow(sql)
 		assert.NoError(t, row.Scan(&ver))
 

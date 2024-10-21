@@ -14,7 +14,7 @@ type (
 
 	ConnectorFunc func(ctx context.Context, c *Config) (driver.Connector, error)
 
-	//GetDriverFunc func(dialect string) (dri.Driver, error)
+	//GetDriverFunc func(dialect string) (drv.Driver, error)
 
 	//GetDSNFunc func(dialect string) (Dsner, error)
 )

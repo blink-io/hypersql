@@ -58,7 +58,7 @@ func GetSQLServerConnector(ctx context.Context, c *Config) (driver.Connector, er
 	}
 	dsn := cc.URL().String()
 	drv := WrapDriver(RawSQLServerDriver(), c.DriverWrappers, c.DriverHooks)
-	return &dsnConnector{dsn: dsn, dri: drv}, nil
+	return &dsnConnector{dsn: dsn, drv: drv}, nil
 }
 
 func (c *Config) ToSQLServer() {
@@ -152,6 +152,9 @@ func RawSQLServerDriver() driver.Driver {
 func processSQLServerParams(params ConfigParams, c *msdsn.Config) error {
 	params.IfNotEmpty(mssqlparams.ConnParams.Database, func(v string) {
 		c.Database = v
+	})
+	params.IfNotEmpty(mssqlparams.ConnParams.Encrypt, func(v string) {
+		c.Encryption = msdsn.Encryption(cast.ToInt(v))
 	})
 	params.IfNotEmpty(mssqlparams.ConnParams.AppName, func(v string) {
 		c.AppName = v

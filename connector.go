@@ -9,15 +9,15 @@ var _ driver.Connector = (*dsnConnector)(nil)
 
 type dsnConnector struct {
 	dsn string
-	dri driver.Driver
+	drv driver.Driver
 }
 
 func (c *dsnConnector) Connect(_ context.Context) (driver.Conn, error) {
-	return c.dri.Open(c.dsn)
+	return c.drv.Open(c.dsn)
 }
 
 func (c *dsnConnector) Driver() driver.Driver {
-	return c.dri
+	return c.drv
 }
 
 type wrapConnector struct {
