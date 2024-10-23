@@ -33,6 +33,7 @@ var ConnParams = connParams{
 	DialTimeout:            "dial timeout",
 	Pipe:                   "pipe",
 	MultiSubnetFailover:    "multisubnetfailover",
+	ColumnEncryption:       "columnencryption",
 }
 
 type connParams struct {
@@ -62,6 +63,8 @@ type connParams struct {
 	DialTimeout            string
 	Pipe                   string
 	MultiSubnetFailover    string
+	//
+	ColumnEncryption string
 }
 
 func (p connParams) Exists(key string) bool {
@@ -91,7 +94,8 @@ func (p connParams) Exists(key string) bool {
 		p.Protocol,
 		p.DialTimeout,
 		p.Pipe,
-		p.MultiSubnetFailover:
+		p.MultiSubnetFailover,
+		p.ColumnEncryption:
 		return true
 	default:
 		return false

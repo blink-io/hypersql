@@ -169,7 +169,6 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 	pgcc.Port = uint16(port)
 	pgcc.User = user
 	pgcc.Password = password
-	pgcc.RuntimeParams = handlePostgresParams(params)
 	pgcc.TLSConfig = tlsConfig
 	if dialTimeout > 0 {
 		pgcc.ConnectTimeout = dialTimeout
@@ -193,6 +192,10 @@ func ToPostgresConfig(c *Config) (*pgx.ConnConfig, error) {
 		}
 	}
 
+	if err := handlePostgresParams(c.Params, cc); err != nil {
+		return nil, err
+	}
+
 	return cc, nil
 }
 
@@ -202,12 +205,12 @@ func RawPostgresDriver() driver.Driver {
 	return stdlib.GetDefaultDriver()
 }
 
-func handlePostgresParams(params ConfigParams) map[string]string {
+func handlePostgresParams(params ConfigParams, cc *pgx.ConnConfig) error {
 	newParams := make(map[string]string)
 	for k, v := range params {
 		newParams[k] = v
 	}
-	return newParams
+	return nil
 }
 
 func IsCompatiblePostgresDialect(dialect string) bool {

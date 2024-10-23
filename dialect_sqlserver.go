@@ -5,6 +5,9 @@ import (
 	"crypto/tls"
 	"database/sql/driver"
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 
 	mssqlparams "github.com/blink-io/hypersql/sqlserver/params"
 	"github.com/microsoft/go-mssqldb"
@@ -106,7 +109,13 @@ func ToSQLServerConfig(c *Config) (*msdsn.Config, error) {
 		params = make(ConfigParams)
 	}
 
-	cc := &msdsn.Config{}
+	cc := &msdsn.Config{
+		Database: name,
+		Host:     host,
+		Port:     uint64(port),
+		User:     user,
+		Password: password,
+	}
 
 	if c.TLSConfig != nil {
 		tlsConfig = c.TLSConfig
@@ -124,22 +133,17 @@ func ToSQLServerConfig(c *Config) (*msdsn.Config, error) {
 		tlsConfig = tlscnf
 	}
 
-	cc.Database = name
-	cc.Host = host
-	cc.Port = uint64(port)
-	cc.User = user
-	cc.Password = password
 	cc.TLSConfig = tlsConfig
 	if dialTimeout > 0 {
 		cc.DialTimeout = dialTimeout
 	}
 
-	if err := processSQLServerParams(params, cc); err != nil {
-		return nil, err
-	}
-
 	if ext, ok := c.Extra.(*SQLServerExtra); ok && ext != nil {
 
+	}
+
+	if err := handleSQLServerParams(params, cc); err != nil {
+		return nil, err
 	}
 
 	return cc, nil
@@ -149,13 +153,83 @@ func RawSQLServerDriver() driver.Driver {
 	return &mssql.Driver{}
 }
 
-func processSQLServerParams(params ConfigParams, c *msdsn.Config) error {
+func handleSQLServerParams(params ConfigParams, c *msdsn.Config) error {
+	var err error
 	params.IfNotEmpty(mssqlparams.ConnParams.Database, func(v string) {
 		c.Database = v
 	})
-	params.IfNotEmpty(mssqlparams.ConnParams.Encrypt, func(v string) {
-		c.Encryption = msdsn.Encryption(cast.ToInt(v))
+
+	if err = params.IfNotEmptyWithErr(mssqlparams.ConnParams.FailOverPort, func(v string) error {
+		var err error
+		c.FailOverPort, err = strconv.ParseUint(v, 0, 16)
+		if err != nil {
+			f := "invalid failover port '%v': %v"
+			return fmt.Errorf(f, v, err.Error())
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	params.IfExists(mssqlparams.ConnParams.HostNameInCertificate, func(v string) {
+		c.HostInCertificateProvided = true
 	})
+
+	if err = params.IfNotEmptyWithErr(mssqlparams.ConnParams.DisableRetry, func(v string) error {
+		var err error
+		c.DisableRetry, err = strconv.ParseBool(v)
+		if err != nil {
+			f := "invalid disableRetry '%s': %s"
+			return fmt.Errorf(f, v, err.Error())
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	if err = params.IfNotEmptyWithErr(mssqlparams.ConnParams.MultiSubnetFailover, func(v string) error {
+		multiSubnetFailover, err := strconv.ParseBool(v)
+		if err != nil {
+			if strings.EqualFold(v, "Enabled") {
+				multiSubnetFailover = true
+			} else if strings.EqualFold(v, "Disabled") {
+				multiSubnetFailover = false
+			} else {
+				return fmt.Errorf("invalid multiSubnetFailover value '%v': %v", multiSubnetFailover, err.Error())
+			}
+		}
+		c.MultiSubnetFailover = multiSubnetFailover
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	if err = params.IfNotEmptyWithErr(mssqlparams.ConnParams.Encrypt, func(v string) error {
+		var encryption msdsn.Encryption = msdsn.EncryptionOff
+		v = strings.ToLower(v)
+		switch v {
+		case "mandatory", "yes", "1", "t", "true":
+			encryption = msdsn.EncryptionRequired
+		case "disable":
+			encryption = msdsn.EncryptionDisabled
+		case "strict":
+			encryption = msdsn.EncryptionStrict
+		case "optional", "no", "0", "f", "false":
+			encryption = msdsn.EncryptionOff
+		default:
+			f := "invalid encrypt '%s'"
+			return fmt.Errorf(f, v)
+		}
+		c.Encryption = encryption
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	params.IfNotEmpty(mssqlparams.ConnParams.FailoverPartner, func(v string) {
+		c.FailOverPartner = v
+	})
+
 	params.IfNotEmpty(mssqlparams.ConnParams.AppName, func(v string) {
 		c.AppName = v
 	})
@@ -165,12 +239,48 @@ func processSQLServerParams(params ConfigParams, c *msdsn.Config) error {
 			c.KeepAlive = tt
 		}
 	})
+	params.IfNotEmpty(mssqlparams.ConnParams.DialTimeout, func(v string) {
+		tt := cast.ToDuration(v)
+		if tt > 0 {
+			c.DialTimeout = tt
+		}
+	})
+	params.IfNotEmpty(mssqlparams.ConnParams.ConnectionTimeout, func(v string) {
+		tt := cast.ToDuration(v)
+		if tt > 0 {
+			c.ConnTimeout = tt
+		}
+	})
+	params.IfNotEmpty(mssqlparams.ConnParams.PacketSize, func(v string) {
+		psize := cast.ToUint16(v)
+		if psize < 512 {
+			c.PacketSize = 512
+		} else if psize > 32767 {
+			c.PacketSize = 32767
+		}
+	})
 	params.IfNotEmpty(mssqlparams.ConnParams.ServerSpn, func(v string) {
 		c.ServerSPN = v
 	})
 	params.IfNotEmpty(mssqlparams.ConnParams.WorkstationID, func(v string) {
 		c.Workstation = v
 	})
+	if err = params.IfNotEmptyWithErr(mssqlparams.ConnParams.ColumnEncryption, func(v string) error {
+		columnEncryption, err := strconv.ParseBool(v)
+		if err != nil {
+			if strings.EqualFold(v, "Enabled") {
+				columnEncryption = true
+			} else if strings.EqualFold(v, "Disabled") {
+				columnEncryption = false
+			} else {
+				return fmt.Errorf("invalid columnencryption '%v' : %v", columnEncryption, err.Error())
+			}
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 

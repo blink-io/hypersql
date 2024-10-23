@@ -114,12 +114,11 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	tlsConfig := c.TLSConfig
 	loc := c.Loc
 	params := c.Params
-
 	if loc == nil {
 		loc = time.Local
 	}
 	if params == nil {
-		params = make(map[string]string)
+		params = make(ConfigParams)
 	}
 
 	// Restful TLS Params
@@ -135,11 +134,7 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 	if dialTimeout > 0 {
 		cc.Timeout = dialTimeout
 	}
-	// TODO Do we need to check them?
-	cc.Params = handleMySQLParams(params)
-	params.IfNotEmpty(mysqlparams.ConnParams.Collation, func(value string) {
-		cc.Collation = value
-	})
+
 	if network == "tcp" {
 		cc.Addr = net.JoinHostPort(host, cast.ToString(port))
 	} else {
@@ -179,6 +174,10 @@ func ToMySQLConfig(c *Config) (*mysql.Config, error) {
 		cc.InterpolateParams = ext.InterpolateParams
 	}
 
+	if err := handleMySQLParams(params, cc); err != nil {
+		return nil, err
+	}
+
 	return cc, nil
 }
 
@@ -194,10 +193,9 @@ func mysqlTLSKeyName(name string) string {
 	return DialectMySQL + "_" + name
 }
 
-func handleMySQLParams(params ConfigParams) map[string]string {
-	newParams := make(map[string]string)
-	for k, v := range params {
-		newParams[k] = v
-	}
-	return newParams
+func handleMySQLParams(params ConfigParams, cc *mysql.Config) error {
+	params.IfNotEmpty(mysqlparams.ConnParams.Collation, func(value string) {
+		cc.Collation = value
+	})
+	return nil
 }
