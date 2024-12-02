@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/XSAM/otelsql v0.35.0
-	github.com/exaring/otelpgx v0.6.2
+	github.com/exaring/otelpgx v0.7.0
 	github.com/getsentry/sentry-go v0.29.1
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/uuid v1.6.0
@@ -16,10 +16,10 @@ require (
 	github.com/qustavo/sqlhooks/v2 v2.1.0
 	github.com/sanity-io/litter v1.5.5
 	github.com/spf13/cast v1.7.0
-	github.com/stephenafamo/scan v0.6.0
+	github.com/stephenafamo/scan v0.6.1
 	github.com/stretchr/testify v1.9.0
 	github.com/xo/dburl v0.23.2
-	modernc.org/sqlite v1.33.1
+	modernc.org/sqlite v1.34.2
 )
 
 require (
@@ -53,7 +53,7 @@ require (
 	golang.org/x/text v0.20.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/gc/v3 v3.0.0-20241004144649-1aea3fae8852 // indirect
-	modernc.org/libc v1.61.0 // indirect
+	modernc.org/libc v1.61.3 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/strutil v1.2.0 // indirect
