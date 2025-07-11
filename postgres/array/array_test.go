@@ -1,9 +1,10 @@
-package pqarray
+package array
 
 import (
 	"database/sql"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestStringArray(t *testing.T) {
