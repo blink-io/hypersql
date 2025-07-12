@@ -1,4 +1,4 @@
-package array
+package types
 
 import (
 	"database/sql"
