@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"github.com/blink-io/hypersql"
 	mysqlparams "github.com/blink-io/hypersql/mysql/params"
 	"github.com/spf13/cast"
 )
@@ -63,8 +62,8 @@ type Config struct {
 	ParseTime bool
 }
 
-func (c *Config) ToConfigParams() hypersql.ConfigParams {
-	params := hypersql.ConfigParams{
+func (c *Config) ToConfigParams() map[string]string {
+	params := map[string]string{
 		mysqlparams.ConnParams.Host:       c.Host,
 		mysqlparams.ConnParams.Port:       cast.ToString(c.Port),
 		mysqlparams.ConnParams.User:       c.User,

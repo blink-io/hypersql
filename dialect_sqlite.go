@@ -12,16 +12,19 @@ import (
 
 var compatibleSQLiteDialects = []string{
 	DialectSQLite,
-	"sqlite3",
+	DialectSQLite3,
 }
 
 func init() {
-	dialect := DialectSQLite
 	//drivers[dn] = GetSQLiteDriver
 	//dsners[dn] = GetSQLiteDSN
-	connectors[dialect] = GetSQLiteConnector
-	dialecters[dialect] = IsCompatibleSQLiteDialect
-	dsners[dialect] = ToSQLiteDSN
+	connectors[DialectSQLite] = GetSQLiteConnector
+	dialecters[DialectSQLite] = IsCompatibleSQLiteDialect
+	dsners[DialectSQLite] = ToSQLiteDSN
+
+	connectors[DialectSQLite3] = GetSQLiteConnector
+	dialecters[DialectSQLite3] = IsCompatibleSQLiteDialect
+	dsners[DialectSQLite3] = ToSQLiteDSN
 }
 
 func GetSQLiteDSN(dialect string) (Dsner, error) {

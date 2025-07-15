@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"github.com/blink-io/hypersql"
 	pgparams "github.com/blink-io/hypersql/postgres/params"
 	"github.com/spf13/cast"
 )
@@ -105,8 +104,8 @@ type Config struct {
 	LoadBalanceHosts string
 }
 
-func (c *Config) ToConfigParams() hypersql.ConfigParams {
-	params := hypersql.ConfigParams{
+func (c *Config) ToConfigParams() map[string]string {
+	params := map[string]string{
 		pgparams.ConnParams.Host:                    c.Host,
 		pgparams.ConnParams.Port:                    cast.ToString(c.Port),
 		pgparams.ConnParams.Hostaddr:                c.Hostaddr,

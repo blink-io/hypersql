@@ -8,7 +8,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/blink-io/hypersql"
 	sqliteparams "github.com/blink-io/hypersql/sqlite/params"
 	"github.com/spf13/cast"
 )
@@ -212,8 +211,8 @@ func FormatDSN(c *Config) string {
 	return buf.String()
 }
 
-func (c *Config) ToConfigParams() hypersql.ConfigParams {
-	params := hypersql.ConfigParams{
+func (c *Config) ToConfigParams() map[string]string {
+	params := map[string]string{
 		sqliteparams.ConnParams.Auth:                   cast.ToString(c.Auth),
 		sqliteparams.ConnParams.AuthUser:               c.AuthUser,
 		sqliteparams.ConnParams.AuthPass:               c.AuthPass,
@@ -243,7 +242,7 @@ func (c *Config) ToConfigParams() hypersql.ConfigParams {
 	return params
 }
 
-func ToConfigParams(c *Config) hypersql.ConfigParams {
+func ToConfigParams(c *Config) map[string]string {
 	return c.ToConfigParams()
 }
 
@@ -251,7 +250,7 @@ func ParseDSN(dsn string) (*Config, error) {
 	pos := strings.IndexRune(dsn, '?')
 
 	var name string
-	params := make(hypersql.ConfigParams)
+	params := make(map[string]string)
 	if pos >= 1 {
 		if query, err := url.ParseQuery(dsn[pos+1:]); err != nil {
 			return nil, err
@@ -279,7 +278,7 @@ func ParseDSN(dsn string) (*Config, error) {
 	return cc, nil
 }
 
-func (c *Config) HandleParams(params hypersql.ConfigParams) error {
+func (c *Config) HandleParams(params map[string]string) error {
 	if c == nil || len(params) == 0 {
 		return nil
 	}
