@@ -23,12 +23,12 @@ func New(ops ...Option) *Hook {
 	return h
 }
 
-func (h *Hook) Before(ctx context.Context, query string, args ...interface{}) (context.Context, error) {
+func (h *Hook) Before(ctx context.Context, query string, args ...any) (context.Context, error) {
 	newCtx := context.WithValue(ctx, ctxKey{}, time.Now())
 	return newCtx, nil
 }
 
-func (h *Hook) After(ctx context.Context, query string, args ...interface{}) (context.Context, error) {
+func (h *Hook) After(ctx context.Context, query string, args ...any) (context.Context, error) {
 	if before, ok := ctx.Value(ctxKey{}).(time.Time); ok {
 		h.logf("[TIMING] Executed SQL, timing cost [%s] for: %s", time.Since(before), query)
 	}

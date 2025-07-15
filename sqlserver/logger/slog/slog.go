@@ -29,6 +29,6 @@ func (l *Logger) Printf(format string, args ...any) {
 	l.sl.Log(l.ctx, l.lv, fmt.Sprintf(format, args...))
 }
 
-func (l *Logger) Println(v ...interface{}) {
+func (l *Logger) Println(v ...any) {
 	l.sl.Log(l.ctx, l.lv, fmt.Sprint(v...))
 }
