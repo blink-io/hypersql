@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/blink-io/hypersql"
 	sqliteparams "github.com/blink-io/hypersql/sqlite/params"
 	"github.com/spf13/cast"
 )
@@ -85,26 +86,26 @@ type Config struct {
 	AuthPass               string
 	AuthCrypt              string
 	AuthSalt               string
+	AutoVacuum             string
+	BusyTimeout            int
 	Cache                  string
-	Mode                   string
-	Mutex                  string
+	CacheSize              int
 	CaseSensitiveLike      bool
-	Immutable              bool
-	QueryOnly              bool
+	DeferForeignKeys       bool
 	ForeignKeys            bool
 	IgnoreCheckConstraints bool
-	DeferForeignKeys       bool
-	BusyTimeout            int
-	AutoVacuum             string
+	Immutable              bool
 	JournalMode            string
+	Loc                    string
 	LockingMode            string
+	Mode                   string
+	Mutex                  string
+	QueryOnly              bool
 	RecursiveTriggers      bool
 	SecureDelete           string
 	Sync                   string
-	Loc                    string
 	TxLock                 string
 	WritableSchema         bool
-	CacheSize              int
 }
 
 func (c *Config) FormatDSN() string {
@@ -211,11 +212,46 @@ func FormatDSN(c *Config) string {
 	return buf.String()
 }
 
+func (c *Config) ToConfigParams() hypersql.ConfigParams {
+	params := hypersql.ConfigParams{
+		sqliteparams.ConnParams.Auth:                   cast.ToString(c.Auth),
+		sqliteparams.ConnParams.AuthUser:               c.AuthUser,
+		sqliteparams.ConnParams.AuthPass:               c.AuthPass,
+		sqliteparams.ConnParams.AuthSalt:               c.AuthSalt,
+		sqliteparams.ConnParams.AuthCrypt:              c.AuthCrypt,
+		sqliteparams.ConnParams.AutoVacuum:             c.AutoVacuum,
+		sqliteparams.ConnParams.BusyTimeout:            cast.ToString(c.BusyTimeout),
+		sqliteparams.ConnParams.Cache:                  c.Cache,
+		sqliteparams.ConnParams.CacheSize:              cast.ToString(c.CacheSize),
+		sqliteparams.ConnParams.CaseSensitiveLike:      cast.ToString(c.CaseSensitiveLike),
+		sqliteparams.ConnParams.DeferForeignKeys:       cast.ToString(c.DeferForeignKeys),
+		sqliteparams.ConnParams.ForeignKeys:            cast.ToString(c.ForeignKeys),
+		sqliteparams.ConnParams.IgnoreCheckConstraints: cast.ToString(c.IgnoreCheckConstraints),
+		sqliteparams.ConnParams.Immutable:              cast.ToString(c.Immutable),
+		sqliteparams.ConnParams.JournalMode:            c.JournalMode,
+		sqliteparams.ConnParams.Loc:                    c.Loc,
+		sqliteparams.ConnParams.LockingMode:            c.LockingMode,
+		sqliteparams.ConnParams.Mode:                   c.Mode,
+		sqliteparams.ConnParams.Mutex:                  c.Mutex,
+		sqliteparams.ConnParams.QueryOnly:              cast.ToString(c.QueryOnly),
+		sqliteparams.ConnParams.RecursiveTriggers:      cast.ToString(c.RecursiveTriggers),
+		sqliteparams.ConnParams.SecureDelete:           cast.ToString(c.SecureDelete),
+		sqliteparams.ConnParams.Sync:                   c.Sync,
+		sqliteparams.ConnParams.TxLock:                 c.TxLock,
+		sqliteparams.ConnParams.WritableSchema:         cast.ToString(c.WritableSchema),
+	}
+	return params
+}
+
+func ToConfigParams(c *Config) hypersql.ConfigParams {
+	return c.ToConfigParams()
+}
+
 func ParseDSN(dsn string) (*Config, error) {
 	pos := strings.IndexRune(dsn, '?')
 
 	var name string
-	params := make(map[string]string)
+	params := make(hypersql.ConfigParams)
 	if pos >= 1 {
 		if query, err := url.ParseQuery(dsn[pos+1:]); err != nil {
 			return nil, err
@@ -243,7 +279,7 @@ func ParseDSN(dsn string) (*Config, error) {
 	return cc, nil
 }
 
-func (c *Config) HandleParams(params map[string]string) error {
+func (c *Config) HandleParams(params hypersql.ConfigParams) error {
 	if c == nil || len(params) == 0 {
 		return nil
 	}
@@ -280,7 +316,7 @@ func (c *Config) HandleParams(params map[string]string) error {
 	cacheSize := 2000
 
 	// Check duplicate params
-	synonParams := [][]string{
+	synonymParams := [][]string{
 		{sqliteparams.ConnParams.AutoVacuum, sqliteparams.ConnParams.Vacuum},
 		{sqliteparams.ConnParams.DeferForeignKeys, sqliteparams.ConnParams.DeferFK},
 		{sqliteparams.ConnParams.CaseSensitiveLike, sqliteparams.ConnParams.CSLike},
@@ -291,7 +327,7 @@ func (c *Config) HandleParams(params map[string]string) error {
 		{sqliteparams.ConnParams.RecursiveTriggers, sqliteparams.ConnParams.RT},
 		{sqliteparams.ConnParams.Synchronous, sqliteparams.ConnParams.Sync},
 	}
-	for _, ss := range synonParams {
+	for _, ss := range synonymParams {
 		if err := ifSynonym(params, func(keys ...string) error {
 			return ErrSynonymousParam
 		}, ss...); err != nil {

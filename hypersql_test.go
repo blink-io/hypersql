@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/spf13/cast"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -29,4 +30,10 @@ func TestPgxParseConfig(t *testing.T) {
 	cc, err := pgx.ParseConfig(str)
 	require.NoError(t, err)
 	require.NotNil(t, cc)
+}
+
+func TestCastDuration(t *testing.T) {
+	d1 := cast.ToDuration("1m4s")
+	d2 := 64 * time.Second
+	assert.Equal(t, d1, d2)
 }

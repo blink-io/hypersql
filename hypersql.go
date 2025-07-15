@@ -24,7 +24,7 @@ var (
 
 	ErrUnsupportedDriver = errors.New("unsupported drv")
 
-	InvalidConfig = errors.New("invalid config")
+	ErrInvalidConfig = errors.New("invalid config")
 )
 
 type (
